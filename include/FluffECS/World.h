@@ -9,7 +9,7 @@
 
 #include "Keywords.h"
 #include "TypeId.h"
-#include "TypeIdTree.h"
+#include "SortedKeyTree.h"
 #include "Entity.h"
 #include "TypeList.h"
 #include "ComponentContainer.h"
@@ -17,8 +17,6 @@
 
 namespace flf
 {
-	// TODO: Global next free index
-	
 	/// A world contains many entities that may have differing types. Each entity is saved in a ComponentContainer that has
 	/// exactly the specific component types of that entity.
 	/// \tparam TMemResource polymorphic memory resource (from std::pmr) used for general storage of components
@@ -155,7 +153,7 @@ namespace flf
 			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
 			
-			return ContainerOf(entity.Id()).template Get<TComponent>(entity.Id());
+			return ContainerOf(entity.Id()).template GetNext<TComponent>(entity.Id());
 		}
 		
 		/// Gets the component of a given entity
@@ -168,7 +166,7 @@ namespace flf
 			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
 			
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
-			return ContainerOf(entity.Id()).template Get<TComponent>(entity.Id());
+			return ContainerOf(entity.Id()).template GetNext<TComponent>(entity.Id());
 		}
 		
 		/// Creates an entity with the given types
@@ -413,7 +411,7 @@ namespace flf
 		template<typename ...TComponents>
 		std::vector<ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) noexcept
 		{
-			return _vectorsMap.Get<sizeof...(TComponents)>({TypeId<TComponents> ...});
+			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents> ...});
 		}
 		
 		/// Collects all vectors containing at minimum the given components
@@ -422,7 +420,7 @@ namespace flf
 		std::vector<const ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) const noexcept
 		{
 			
-			return _vectorsMap.Get<sizeof...(TComponents)>({TypeId<TComponents> ...});
+			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents> ...});
 		}
 		
 		template<typename ...TComponents>
@@ -492,7 +490,7 @@ namespace flf
 		{
 			container->world = static_cast<internal::WorldInternal *>(this);
 			_componentContainers.insert({multiId, container});
-			_vectorsMap.Insert(container, individualIds);
+			_vectorsMap.Insert(individualIds, container);
 		}
 	
 	private:
@@ -526,7 +524,7 @@ namespace flf
 		/// maps multi type id to that specific component vector
 		Map<MultiIdType, ComponentContainer *> _componentContainers{};
 		/// maps a sequence of component types to component containers that contain those
-		internal::TypeIdTree<ComponentContainer *> _vectorsMap{};
+		internal::SortedKeyTree<IdType, ComponentContainer *> _vectorsMap{_tempResource};
 	};
 	
 	using World = BasicWorld<std::pmr::unsynchronized_pool_resource>;

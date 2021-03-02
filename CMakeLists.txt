@@ -13,7 +13,7 @@ target_sources(FluffECS
         include/FluffECS/Keywords.h
         include/FluffECS/TypeId.h
         include/FluffECS/TypeList.h
-        include/FluffECS/TypeIdTree.h
+        include/FluffECS/SortedKeyTree.h
         include/FluffECS/VirtualConstructor.h
         include/FluffECS/Entity.h
         include/FluffECS/SparseSet.h
@@ -25,6 +25,3 @@ target_sources(FluffECS
         include/FluffECS/IteratorContainer.h
         include/FluffECS/Serialization.h
         )
-
-#set_target_properties(FluffECS PROPERTIES CXX_STANDARD 17)
-#set_target_properties(FluffECS PROPERTIES LINKER_LANGUAGE CXX)
