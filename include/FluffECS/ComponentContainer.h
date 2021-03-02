@@ -223,38 +223,38 @@ namespace flf
 			template<size_type ...Is>
 			inline reference CreateReference(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
 			{
-				return {_vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
+				return {_vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
 			inline PackType<EntityId, TComponents &...> CreateEntityReference(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
 			{
-				return {_ids[_currIndex], _vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
+				return {_ids[_currIndex], _vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
 			inline const_reference CreateConstReference(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
 			{
-				return {_vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
+				return {_vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
 			inline PackType<EntityId, const TComponents &...> CreateEntityReference(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
 			{
-				return {_ids[_currIndex], _vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
+				return {_ids[_currIndex], _vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
 			}
 			
 			
 			template<size_type ...Is>
 			inline pointer CreatePointer(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
 			{
-				return {(&_vectors[Is]->template Get<PureType < TComponents>>(_currIndex))...};
+				return {(&_vectors[Is]->template Get<PureType<TComponents>>(_currIndex))...};
 			}
 			
 			template<size_type ...Is>
 			inline const_pointer CreateConstPointer(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
 			{
-				return {(&_vectors[Is]->template Get<PureType < TComponents>>(_currIndex))...};
+				return {(&_vectors[Is]->template Get<PureType<TComponents>>(_currIndex))...};
 			}
 		
 		private:
