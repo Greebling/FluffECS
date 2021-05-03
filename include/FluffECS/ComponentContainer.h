@@ -331,6 +331,7 @@ namespace flf
 			auto index = world->TakeNextFreeIndex(*this);
 			_sparse.AddEntry(index, _componentIds.size() - 1);
 			((GetVector<TComponents>().template EmplaceBack<TComponents>(std::forward<TComponents>(components))), ...);
+			_componentIds.push_back(index);
 			return index;
 		}
 		

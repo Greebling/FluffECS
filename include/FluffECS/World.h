@@ -164,8 +164,8 @@ namespace flf
 		inline TComponent &Get(const Entity entity) const FLUFF_NOEXCEPT
 		{
 			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
-			
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
+			
 			return ContainerOf(entity.Id()).template GetNext<TComponent>(entity.Id());
 		}
 		
@@ -419,16 +419,13 @@ namespace flf
 		template<typename ...TComponents>
 		std::vector<const ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) const noexcept
 		{
-			
 			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents> ...});
 		}
 		
 		template<typename ...TComponents>
 		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>) FLUFF_NOEXCEPT
 		{
-			
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
-			
 			return Entity(vec.PushBack<TComponents...>(), *static_cast<internal::WorldInternal *>(this));
 		}
 		
@@ -436,7 +433,7 @@ namespace flf
 		inline Entity CreateEntityWithImpl(internal::TypeList<TComponents...>, TAddedComponents &&...args) FLUFF_NOEXCEPT
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
-			return vec.EmplaceBack(std::forward<TAddedComponents>(args)...);
+			return Entity(vec.EmplaceBack(std::forward<TAddedComponents>(args)...), *static_cast<internal::WorldInternal *>(this));
 		}
 		
 		template<typename ...TComponents>
