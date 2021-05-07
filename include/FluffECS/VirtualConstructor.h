@@ -42,7 +42,7 @@ namespace flf::internal
 			return {&DefaultConstructAt<T>, &MoveConstructAt<T>, &CopyConstructAt<T>, &DestructAt<T>};
 		}
 		
-		void (*defaultConstruct)(void * at);
+		void (*defaultConstruct)(void *at);
 		
 		void (*moveConstruct)(void *at, void *from);
 		

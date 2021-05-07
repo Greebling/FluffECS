@@ -15,7 +15,7 @@ namespace flf
 		constexpr inline IdType
 		HashString(const char *str, std::size_t stringSize, std::uint32_t basis = 2166136261u) noexcept
 		{
-			if(stringSize == 0)
+			if (stringSize == 0)
 			{
 				return basis;
 			} else
@@ -49,13 +49,13 @@ namespace flf
 		{
 			MultiIdType result = 0;
 			TIterator beginXor = begin;
-			for(; beginXor < end; ++beginXor)
+			for (; beginXor < end; ++beginXor)
 			{
 				result = result xor (*beginXor + 0x9e3779b9);
 			}
 			result = result xor (typeToAdd + 0x9e3779b9);
 			
-			for(; begin < end; ++begin)
+			for (; begin < end; ++begin)
 			{
 				result += *begin;
 			}
@@ -64,26 +64,26 @@ namespace flf
 			return result;
 		}
 		
-		template<typename TIterator1, typename  TIterator2>
+		template<typename TIterator1, typename TIterator2>
 		static MultiIdType CombineIds(TIterator1 begin1, TIterator1 end1, TIterator2 begin2, TIterator2 end2)
 		{
 			MultiIdType result = 0;
 			TIterator1 curr1 = begin1;
-			for(; curr1 < end1; ++curr1)
+			for (; curr1 < end1; ++curr1)
 			{
 				result = result xor (*curr1 + 0x9e3779b9);
 			}
 			TIterator2 curr2 = begin2;
-			for(; curr2 < end2; ++curr2)
+			for (; curr2 < end2; ++curr2)
 			{
 				result = result xor (*curr2 + 0x9e3779b9);
 			}
 			
-			for(; begin1 < end1; ++begin1)
+			for (; begin1 < end1; ++begin1)
 			{
 				result += *begin1;
 			}
-			for(; begin2 < end2; ++begin2)
+			for (; begin2 < end2; ++begin2)
 			{
 				result += *begin2;
 			}
@@ -96,12 +96,12 @@ namespace flf
 		{
 			MultiIdType result = 0;
 			TIterator beginXor = begin;
-			for(; beginXor < end; ++beginXor)
+			for (; beginXor < end; ++beginXor)
 			{
 				result = result xor (*beginXor + 0x9e3779b9);
 			}
 			
-			for(; begin < end; ++begin)
+			for (; begin < end; ++begin)
 			{
 				result += *begin;
 			}

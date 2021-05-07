@@ -52,10 +52,12 @@ namespace flf
 		{
 			std::vector<Iterator> iterators{};
 			
-			for(auto *container : _containers)
+			for (auto *container : _containers)
 			{
-				if(container->Size() != 0)
+				if (container->Size() != 0)
+				{
 					iterators.emplace_back(IterableContainerAdapter<TComponents...>(*container).begin());
+				}
 			}
 			
 			return IteratorContainer<TComponents...>(std::forward<std::vector<Iterator>>(iterators), 0);
@@ -65,10 +67,12 @@ namespace flf
 		{
 			std::vector<Iterator> iterators{};
 			
-			for(auto *container : _containers)
+			for (auto *container : _containers)
 			{
-				if(container->Size() != 0)
+				if (container->Size() != 0)
+				{
 					iterators.emplace_back(IterableContainerAdapter<TComponents...>(*container).end());
+				}
 			}
 			
 			return IteratorContainer<TComponents...>(std::forward<std::vector<Iterator>>(iterators), iterators.size());

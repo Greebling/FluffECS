@@ -34,7 +34,7 @@ namespace flf::internal
 		/// \param resource
 		void SetMemoryResource(std::pmr::memory_resource &resource) noexcept
 		{
-			if(_begin != _sizeEnd && not resource.is_equal(*_resource))
+			if (_begin != _sizeEnd && not resource.is_equal(*_resource))
 			{
 				// reallocate memory
 				const auto byteSize = ByteSize();
@@ -143,15 +143,17 @@ namespace flf::internal
 		/// \return the size the capacity should grow to
 		[[nodiscard]] inline static constexpr std::size_t NextSize(std::size_t n) noexcept
 		{
-			if(n == 0) FLUFF_UNLIKELY
+			if (n == 0) FLUFF_UNLIKELY
 			{
 				return 1;
 			} else
 			{
 				n--; // as for eg n = 32 we want to give out 32, not 64
 				std::size_t next = 1;
-				while(n >>= 1)
+				while (n >>= 1)
+				{
 					next <<= 1;
+				}
 				return next << 1;
 			}
 		}
@@ -186,7 +188,8 @@ namespace flf::internal
 		template<typename T>
 		void DestructElements() noexcept(std::is_nothrow_destructible_v<T>)
 		{
-			for(T *current = std::launder(reinterpret_cast<T *>(_begin)), end = std::launder(reinterpret_cast<T *>(_sizeEnd)); current < end; ++current)
+			for (T *current = std::launder(reinterpret_cast<T *>(_begin)), end = std::launder(reinterpret_cast<T *>(_sizeEnd));
+			     current < end; ++current)
 			{
 				std::destroy_at(current);
 			}
@@ -345,7 +348,8 @@ namespace flf::internal
 			const auto previousSize = Size<T>();
 			ResizeUnsafe<T>(previousSize + amount);
 			
-			for(T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize; curr < std::launder(reinterpret_cast<T *>(_sizeEnd)); ++curr)
+			for (T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize;
+			     curr < std::launder(reinterpret_cast<T *>(_sizeEnd)); ++curr)
 			{
 				new(curr) T(prototype);
 			}
@@ -356,7 +360,7 @@ namespace flf::internal
 		template<typename T>
 		inline void PopBack() noexcept(std::is_nothrow_destructible_v<T>)
 		{
-			if(Size<T>() == 0) FLUFF_UNLIKELY
+			if (Size<T>() == 0) FLUFF_UNLIKELY
 			{
 				return;
 			}
@@ -371,7 +375,7 @@ namespace flf::internal
 		template<typename T>
 		inline void Reserve(std::size_t number) FLUFF_NOEXCEPT
 		{
-			if(number <= Capacity<T>())
+			if (number <= Capacity<T>())
 			{
 				// already can contain this many elements
 				return;
@@ -379,8 +383,10 @@ namespace flf::internal
 			
 			const auto previousSize = ByteSize();
 			auto nextCapacity = NextSize(number) * sizeof(T);
-			if(nextCapacity < MIN_OBJECT_COUNT * sizeof(T))
+			if (nextCapacity < MIN_OBJECT_COUNT * sizeof(T))
+			{
 				nextCapacity = MIN_OBJECT_COUNT * sizeof(T);
+			}
 			
 			auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextCapacity));
 			
@@ -390,9 +396,9 @@ namespace flf::internal
 				std::memcpy(next, _begin, previousSize);
 			} else
 			{
-				for(T *target = std::launder(reinterpret_cast<T *>(next)), *targetEnd = target + (previousSize / sizeof(T)),
-						    *source = std::launder(reinterpret_cast<T *>(_begin));
-				    target < targetEnd; ++target, ++source)
+				for (T *target = std::launder(reinterpret_cast<T *>(next)), *targetEnd = target + (previousSize / sizeof(T)),
+						     *source = std::launder(reinterpret_cast<T *>(_begin));
+				     target < targetEnd; ++target, ++source)
 				{
 					if constexpr (std::is_move_constructible_v<T>)
 					{
@@ -418,18 +424,19 @@ namespace flf::internal
 		void Resize(std::size_t size) FLUFF_NOEXCEPT
 		{
 			const auto previousSize = Size<T>();
-			if(previousSize == size) FLUFF_UNLIKELY
+			if (previousSize == size) FLUFF_UNLIKELY
 			{
 				// noop
 				return;
-			} else if(previousSize < size)
+			} else if (previousSize < size)
 			{
 				// add elements at newEnd
 				Reserve<T>(size);
 				
 				// init objects
-				for(T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize, *end = std::launder(reinterpret_cast<T *>(_begin)) + size;
-				    curr < end; ++curr)
+				for (T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize, *end =
+						std::launder(reinterpret_cast<T *>(_begin)) + size;
+				     curr < end; ++curr)
 				{
 #if __cplusplus > 201703L
 					std::construct_at(curr);
@@ -442,8 +449,8 @@ namespace flf::internal
 			{
 				auto nRemovedElements = size - previousSize;
 				// remove last elements
-				for(T *current = reinterpret_cast<T *>(_sizeEnd) - nRemovedElements;
-				    current < reinterpret_cast<T *>(_sizeEnd); ++current)
+				for (T *current = reinterpret_cast<T *>(_sizeEnd) - nRemovedElements;
+				     current < reinterpret_cast<T *>(_sizeEnd); ++current)
 				{
 					std::destroy_at(current);
 				}
@@ -460,11 +467,11 @@ namespace flf::internal
 		void ResizeUnsafe(std::size_t size) FLUFF_NOEXCEPT
 		{
 			auto previousSize = Size<T>();
-			if(previousSize == size) FLUFF_UNLIKELY
+			if (previousSize == size) FLUFF_UNLIKELY
 			{
 				// noop
 				return;
-			} else if(previousSize < size)
+			} else if (previousSize < size)
 			{
 				// add elements at end
 				Reserve<T>(size);

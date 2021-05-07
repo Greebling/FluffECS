@@ -32,7 +32,7 @@ namespace flf::internal
 			return *_entityToContainer[id];
 		}
 		
-		inline std::pair<EntityId , EntityId> GetNextIndicesRange(EntityId n, ComponentContainer &owner)
+		inline std::pair<EntityId, EntityId> GetNextIndicesRange(EntityId n, ComponentContainer &owner)
 		{
 			// TODO: This causes bad alloc for large sizes, but the single one does not. why?
 			auto beginIndex = _nextFreeIndex;
@@ -43,7 +43,7 @@ namespace flf::internal
 			
 			return {beginIndex, endIndex};
 		}
-	
+		
 		/// Creates a new unique id for an entity
 		/// \param owner of that new entity
 		/// \return the a free unique id for an entity in this world
@@ -69,7 +69,7 @@ namespace flf::internal
 		/// Used for small, temporary allocations
 		std::pmr::unsynchronized_pool_resource _tempResource{{2, 1024}};
 		
-		internal::SparseSet<ComponentContainer*, EntityId> _entityToContainer{_sparseMemory};
+		internal::SparseSet<ComponentContainer *, EntityId> _entityToContainer{_sparseMemory};
 	};
 }
 

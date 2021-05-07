@@ -25,7 +25,8 @@ namespace flf::internal
 		
 		explicit SortedKeyTree(std::pmr::memory_resource &resource)
 				: _resource(resource), _head(resource)
-		{}
+		{
+		}
 		
 		struct Node
 		{
@@ -41,15 +42,18 @@ namespace flf::internal
 			
 			explicit Node(std::pmr::memory_resource &resource) noexcept
 					: _next(&resource)
-			{}
+			{
+			}
 			
 			Node(TKey key, std::pmr::memory_resource &resource) noexcept
 					: _key(key), _next(&resource)
-			{}
+			{
+			}
 			
 			Node(TKey key, TValue val) noexcept
 					: _value(val), _key(key)
-			{}
+			{
+			}
 			
 			[[nodiscard]] inline TKey Key() const noexcept
 			{
@@ -66,23 +70,29 @@ namespace flf::internal
 			/// \return std::numeric_limits<std::size_t>::max() if none is found, else the key of the highest key below or equal to key
 			[[nodiscard]] std::size_t GetAllUntil(TKey key) const noexcept
 			{
-				if(_next.empty() || _next.front().Key() > key)
+				if (_next.empty() || _next.front().Key() > key)
+				{
 					return std::numeric_limits<std::size_t>::max();
+				}
 				
-				if(_next.back().Key() < key)
+				if (_next.back().Key() < key)
+				{
 					return _next.size() - 1;
+				}
 				
 				std::size_t startIndex = 0;
 				std::size_t endIndex = _next.size();
 				
-				while(startIndex != endIndex)
+				while (startIndex != endIndex)
 				{
 					std::size_t midIndex = (startIndex + endIndex) / 2u;
 					
-					if(_next[midIndex].Key() == key)
+					if (_next[midIndex].Key() == key)
+					{
 						return midIndex;
+					}
 					
-					if(_next[midIndex].Key() < key)
+					if (_next[midIndex].Key() < key)
 					{
 						startIndex = midIndex;
 					} else
@@ -91,21 +101,24 @@ namespace flf::internal
 					}
 				}
 				
-				if(_next[endIndex].Key() <= key) FLUFF_LIKELY
+				if (_next[endIndex].Key() <= key) FLUFF_LIKELY
+				{
 					return endIndex;
-				else
+				} else
+				{
 					return std::numeric_limits<std::size_t>::max();
+				}
 			}
 			
 			[[nodiscard]] inline Node *GetChild(TKey key)
 			{
 				std::size_t index = GetAllUntil(key);
-				if(index == std::numeric_limits<std::size_t>::max())
+				if (index == std::numeric_limits<std::size_t>::max())
 				{
 					return nullptr;
 				}
 				
-				if(_next[index].Key() == key)
+				if (_next[index].Key() == key)
 				{
 					return &_next[index];
 				} else
@@ -124,10 +137,12 @@ namespace flf::internal
 			inline Node &AddFollowing(Node &&node) FLUFF_NOEXCEPT
 			{
 				std::size_t insertionPos = 0;
-				for(; insertionPos < _next.size(); ++insertionPos)
+				for (; insertionPos < _next.size(); ++insertionPos)
 				{
-					if(_next[insertionPos].Key() > node.Key())
+					if (_next[insertionPos].Key() > node.Key())
+					{
 						break;
+					}
 				}
 				_next.insert(_next.cbegin() + insertionPos, std::forward<Node>(node));
 				return _next[insertionPos];
@@ -164,9 +179,9 @@ namespace flf::internal
 		{
 			Node *currNode = &_head;
 			std::size_t currentIndex = 0;
-			for(; currentIndex < keySequence.size(); ++currentIndex)
+			for (; currentIndex < keySequence.size(); ++currentIndex)
 			{
-				if(Node *next = currNode->GetChild(keySequence[currentIndex]); next != nullptr)
+				if (Node *next = currNode->GetChild(keySequence[currentIndex]); next != nullptr)
 				{
 					currNode = next;
 				} else
@@ -222,20 +237,21 @@ namespace flf::internal
 		/// \param curr current node
 		/// \param results vector where fitting values will be saved to
 		template<typename TAlloc>
-		static void CollectFromSeq(const std::vector<TKey, TAlloc> &keySequence, std::size_t seqIndex, const Node &curr, std::vector<TValue> &results) noexcept
+		static void CollectFromSeq(const std::vector<TKey, TAlloc> &keySequence, std::size_t seqIndex, const Node &curr,
+		                           std::vector<TValue> &results) noexcept
 		{
-			if(seqIndex >= keySequence.size())
+			if (seqIndex >= keySequence.size())
 			{
 				CollectChildValues(curr, results);
 			} else
 			{
 				std::size_t nextIndex = curr.GetAllUntil(keySequence[seqIndex]);
 				
-				if(nextIndex != std::numeric_limits<std::size_t>::max())
+				if (nextIndex != std::numeric_limits<std::size_t>::max())
 				{
 					// check if we found the exact value; only then we can advance to the next key in the keySequence
 					const Node &foundNode = curr.Next()[nextIndex];
-					if(foundNode.Key() == keySequence[seqIndex])
+					if (foundNode.Key() == keySequence[seqIndex])
 					{
 						CollectFromSeq(keySequence, seqIndex + 1, foundNode, results);
 					} else
@@ -244,7 +260,7 @@ namespace flf::internal
 					}
 					
 					// the rest are stuck at the current seqIndex
-					for(std::size_t i = 0; i < nextIndex; ++i)
+					for (std::size_t i = 0; i < nextIndex; ++i)
 					{
 						CollectFromSeq(keySequence, seqIndex, curr.Next()[i], results);
 					}
@@ -258,20 +274,21 @@ namespace flf::internal
 		/// \param curr current node
 		/// \param results vector where fitting values will be saved to
 		template<std::size_t ARRAY_SIZE>
-		static void CollectFromSeq(const std::array<TKey, ARRAY_SIZE> &keySequence, std::size_t seqIndex, const Node &curr, std::vector<TValue> &results) noexcept
+		static void CollectFromSeq(const std::array<TKey, ARRAY_SIZE> &keySequence, std::size_t seqIndex, const Node &curr,
+		                           std::vector<TValue> &results) noexcept
 		{
-			if(seqIndex >= keySequence.size())
+			if (seqIndex >= keySequence.size())
 			{
 				CollectChildValues(curr, results);
 			} else
 			{
 				std::size_t nextIndex = curr.GetAllUntil(keySequence[seqIndex]);
 				
-				if(nextIndex != std::numeric_limits<std::size_t>::max())
+				if (nextIndex != std::numeric_limits<std::size_t>::max())
 				{
 					// check if we found the exact value; only then we can advance to the next key in the keySequence
 					const Node &foundNode = curr.Next()[nextIndex];
-					if(foundNode.Key() == keySequence[seqIndex])
+					if (foundNode.Key() == keySequence[seqIndex])
 					{
 						CollectFromSeq(keySequence, seqIndex + 1, foundNode, results);
 					} else
@@ -280,7 +297,7 @@ namespace flf::internal
 					}
 					
 					// the rest are stuck at the current seqIndex
-					for(std::size_t i = 0; i < nextIndex; ++i)
+					for (std::size_t i = 0; i < nextIndex; ++i)
 					{
 						CollectFromSeq(keySequence, seqIndex, curr.Next()[i], results);
 					}
@@ -293,14 +310,17 @@ namespace flf::internal
 		/// \param results
 		static void CollectChildValues(const Node &node, std::vector<TValue> &results) noexcept
 		{
-			if(node.Value() != TValue())
+			if (node.Value() != TValue())
+			{
 				results.push_back(node.Value());
+			}
 			
-			for(auto &next : node.Next())
+			for (auto &next : node.Next())
 			{
 				CollectChildValues(next, results);
 			}
 		}
+	
 	private:
 		std::pmr::memory_resource &_resource;
 		Node _head{&_resource};
