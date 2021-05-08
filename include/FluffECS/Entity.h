@@ -11,7 +11,7 @@ namespace flf
 	}
 	
 	
-	// TODO: Remove ComponentContainer Pointer, maybe replace it with a world pointer?
+	
 	class Entity
 	{
 	public:

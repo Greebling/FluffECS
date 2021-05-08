@@ -25,9 +25,6 @@ namespace flf
 		using VectorOf = std::pmr::vector<T>;
 		using IndexType = EntityId;
 		
-		/// how many entities will be saved in one block. If to small the vector pointing to one page will be too large.
-		/// If this is too large too much memory might be wasted for very few components
-		static constexpr IndexType PAGE_SIZE = 1024;
 		/// the number of elements that will be reserved at the construction of the ComponentVector. Does not need to
 		/// be large due to increased efficiency of pmr memory resources
 		static constexpr IndexType VECTOR_PRE_RESERVE_AMOUNT = 32;
@@ -374,7 +371,7 @@ namespace flf
 			return Iterator<TComponents...>(*this, beginSize);
 		}
 		
-		/// reates a multiple entities with the given components
+		/// Creates a multiple entities with the given components
 		/// \tparam TComponents of the container
 		/// \param amount of clones to create
 		/// \param components to clone from
@@ -411,7 +408,7 @@ namespace flf
 				_componentIds[index] = movedEntity;
 				_sparse.SetEntry(movedEntity, index);
 				
-				// move components from back to index as we dont need the data at index anymore
+				// move components from back to index as we don't need the data at index anymore
 				for(IndexType i = 0; i < _typeInfos.size(); ++i)
 				{
 					const auto tInfo = _typeInfos[i];
@@ -511,7 +508,7 @@ namespace flf
 			_typeInfos.push_back(type);
 			_constructors.emplace_back(constructors);
 			
-			return _componentVectors.emplace_back(resource);;
+			return _componentVectors.emplace_back(resource);
 		}
 		
 		/// \tparam TComponent type to contain in the vector
@@ -706,7 +703,7 @@ namespace flf
 	public:
 		/// Point to the owning world, where this container is located. Useful for getting the next free EntityId
 		internal::WorldInternal* world{};
-
+		
 	private:
 		/// The resource the vectors own data is saved in
 		std::pmr::memory_resource *_ownResource = nullptr;

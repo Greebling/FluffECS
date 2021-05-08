@@ -29,9 +29,6 @@ namespace flf
 		/// standard array size is 4KB to most efficiently use caching effects
 		static constexpr std::size_t COMPONENT_VECTOR_BYTE_SIZE = 4096;
 		
-		static constexpr auto COMPONENT_VECTOR_SAVING_PREFIX = "VectorOf";
-		static constexpr auto COMPONENT_VECTOR_SAVING_POSTFIX = ".dat";
-		
 		template<typename Key, typename Value>
 		using Map = std::unordered_map<Key, Value>;
 		
@@ -104,8 +101,8 @@ namespace flf
 		{
 			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...), "Types cannot be reference or pointer");
 			
-			auto ents = EntitiesWith<TComponents...>();
-			IteratorContainer<TComponents...> begin = ents.begin();
+			auto entities = EntitiesWith<TComponents...>();
+			IteratorContainer<TComponents...> begin = entities.begin();
 			
 			for(flf::EntityId i = 0; i < begin.Size(); ++i)
 			{
@@ -263,7 +260,7 @@ namespace flf
 			
 			for(auto i : sourceTInfo)
 			{
-				// dont add the type id we actually want to remove
+				// don't add the type id we actually want to remove
 				if(i.id != TypeId<TComponentToRemove>)
 					targetIds.push_back(i.id);
 			}

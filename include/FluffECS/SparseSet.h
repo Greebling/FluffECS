@@ -59,7 +59,7 @@ namespace flf::internal
 			const TIndex previousSize = _sparse.size();
 			_sparse.resize(size);
 			
-			for (TIndex i = previousSize; i < size; ++i)
+			for(TIndex i = previousSize; i < size; ++i)
 			{
 				_sparse[i] = std::numeric_limits<T>::max();
 			}
