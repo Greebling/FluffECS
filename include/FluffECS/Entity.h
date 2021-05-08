@@ -11,7 +11,6 @@ namespace flf
 	}
 	
 	
-	
 	class Entity
 	{
 	public:

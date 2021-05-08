@@ -23,7 +23,8 @@ namespace flf
 	template<typename TMemResource = std::pmr::unsynchronized_pool_resource>
 	class BasicWorld : private internal::WorldInternal
 	{
-		static_assert(std::is_base_of_v<std::pmr::memory_resource, TMemResource>, "Memory resource must inherit from std::pmr::memory_resource");
+		static_assert(std::is_base_of_v<std::pmr::memory_resource, TMemResource>,
+		              "Memory resource must inherit from std::pmr::memory_resource");
 	
 	private:
 		/// standard array size is 4KB to most efficiently use caching effects
@@ -40,7 +41,7 @@ namespace flf
 	public:
 		~BasicWorld() FLUFF_NOEXCEPT
 		{
-			for(std::pair<const MultiIdType, ComponentContainer *> container : _componentContainers)
+			for (std::pair<const MultiIdType, ComponentContainer *> container : _componentContainers)
 			{
 				// we only call the destructor, the freeing of memory happens through memory resources
 				container.second->~ComponentContainer();
@@ -54,14 +55,15 @@ namespace flf
 		template<typename ...TComponents, typename TFunc>
 		void Foreach(TFunc &&function) noexcept(std::is_nothrow_invocable_v<TFunc>)
 		{
-			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...), "Types cannot be reference or pointer");
+			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
+			              "Types cannot be reference or pointer");
 			
 			IteratorContainer<TComponents...> begin = EntitiesWith<TComponents...>().begin();
-			for(flf::EntityId i = 0; i < begin.Size(); ++i)
+			for (flf::EntityId i = 0; i < begin.Size(); ++i)
 			{
 				auto iter = begin.iterators[i];
 				
-				while(!iter.IsOverEnd())
+				while (!iter.IsOverEnd())
 				{
 					auto tup = iter.GetReference();
 					function(std::get<TComponents &>(tup) ...);
@@ -76,14 +78,15 @@ namespace flf
 		template<typename ...TComponents, typename TFunc>
 		void Foreach(TFunc &&function) const noexcept(std::is_nothrow_invocable_v<TFunc>)
 		{
-			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...), "Types cannot be reference or pointer");
+			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
+			              "Types cannot be reference or pointer");
 			
 			IteratorContainer<const TComponents...> begin = EntitiesWith<TComponents...>().begin();
-			for(flf::EntityId i = 0; i < begin.Size(); ++i)
+			for (flf::EntityId i = 0; i < begin.Size(); ++i)
 			{
 				auto iter = begin.iterators[i];
 				
-				while(!iter.IsOverEnd())
+				while (!iter.IsOverEnd())
 				{
 					const auto tup = iter.GetReference();
 					function(std::get<const TComponents &>(tup) ...);
@@ -99,16 +102,17 @@ namespace flf
 		template<typename ...TComponents, typename TFunc>
 		void ForeachEntity(TFunc &&function) noexcept(std::is_nothrow_invocable_v<TFunc>)
 		{
-			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...), "Types cannot be reference or pointer");
+			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
+			              "Types cannot be reference or pointer");
 			
 			auto entities = EntitiesWith<TComponents...>();
 			IteratorContainer<TComponents...> begin = entities.begin();
 			
-			for(flf::EntityId i = 0; i < begin.Size(); ++i)
+			for (flf::EntityId i = 0; i < begin.Size(); ++i)
 			{
 				auto iter = begin.iterators[i];
 				
-				while(!iter.IsOverEnd())
+				while (!iter.IsOverEnd())
 				{
 					auto tup = iter.GetEntityReference();
 					function(std::get<0>(tup), std::get<TComponents &>(tup) ...); // note the get<0> for the id
@@ -124,14 +128,15 @@ namespace flf
 		template<typename ...TComponents, typename TFunc>
 		void ForeachEntity(TFunc &&function) const noexcept(std::is_nothrow_invocable_v<TFunc>)
 		{
-			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...), "Types cannot be reference or pointer");
+			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
+			              "Types cannot be reference or pointer");
 			
 			IteratorContainer<const TComponents...> begin = EntitiesWith<TComponents...>().begin();
-			for(flf::EntityId i = 0; i < begin.Size(); ++i)
+			for (flf::EntityId i = 0; i < begin.Size(); ++i)
 			{
 				auto iter = begin.iterators[i];
 				
-				while(!iter.IsOverEnd())
+				while (!iter.IsOverEnd())
 				{
 					const auto tup = iter.GetEntityReference();
 					function(std::get<0>(tup), std::get<const TComponents &>(tup) ...); // note the get<0> for the id
@@ -213,7 +218,8 @@ namespace flf
 			static_assert((CanBeComponent<TComponents>() && ...));
 			
 			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
-			return CreateMultipleImpl(internal::Sort(internal::TypeList<TComponents...>()), numEntities, std::forward<TComponents>(args)...);
+			return CreateMultipleImpl(internal::Sort(internal::TypeList<TComponents...>()), numEntities,
+			                          std::forward<TComponents>(args)...);
 		}
 		
 		/// Creates multiple clones from a given entity prototype
@@ -242,7 +248,7 @@ namespace flf
 		/// \tparam TComponents types to add (automatically deducted)
 		/// \param entity to add the component to
 		template<typename ...TComponents>
-		void AddComponent(Entity entity, TComponents&&...comps) FLUFF_NOEXCEPT
+		void AddComponent(Entity entity, TComponents &&...comps) FLUFF_NOEXCEPT
 		{
 			ComponentContainer &destination = AddComponentMoveImpl<TComponents...>(entity);
 			(destination.GetVector<TComponents>().template EmplaceBack<TComponents>(std::forward<TComponents>(comps)), ...);
@@ -258,16 +264,18 @@ namespace flf
 			std::pmr::vector<IdType> targetIds{&_tempResource};
 			targetIds.reserve(sourceTInfo.size() - 1);
 			
-			for(auto i : sourceTInfo)
+			for (auto i : sourceTInfo)
 			{
 				// don't add the type id we actually want to remove
-				if(i.id != TypeId<TComponentToRemove>)
+				if (i.id != TypeId<TComponentToRemove>)
+				{
 					targetIds.push_back(i.id);
+				}
 			}
 			
 			
 			const auto combinedTargetIds = internal::CombineIds(targetIds.cbegin(), targetIds.cend());
-			if(_componentContainers.count(combinedTargetIds))
+			if (_componentContainers.count(combinedTargetIds))
 			{
 				ComponentContainer &destination = *_componentContainers.at(combinedTargetIds);
 				source.MoveEntityTo(destination, entity.Id());
@@ -280,9 +288,9 @@ namespace flf
 				std::pmr::vector<internal::ConstructorVTable> targetConstructors{&_tempResource};
 				targetTypes.reserve(targetIds.size());
 				targetConstructors.reserve(targetIds.size());
-				for(std::size_t i = 0; i < targetIds.size(); ++i)
+				for (std::size_t i = 0; i < targetIds.size(); ++i)
 				{
-					if(sourceTInfo[i].id != TypeId<TComponentToRemove>)
+					if (sourceTInfo[i].id != TypeId<TComponentToRemove>)
 					{
 						targetTypes.push_back(sourceTInfo[i]);
 						targetConstructors.push_back(sourceConstructors[i]);
@@ -301,7 +309,8 @@ namespace flf
 		template<typename ...TComponents>
 		MultiContainerRange<TComponents...> EntitiesWith() FLUFF_NOEXCEPT
 		{
-			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...), "Types cannot be reference or pointer");
+			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
+			              "Types cannot be reference or pointer");
 			
 			return MultiContainerRange<TComponents...>(std::forward<std::vector<ComponentContainer *>>(CollectVectorsOf<TComponents...>()));
 		}
@@ -312,7 +321,8 @@ namespace flf
 		template<typename ...TComponents>
 		MultiContainerRange<const TComponents...> EntitiesWith() const FLUFF_NOEXCEPT
 		{
-			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...), "Types cannot be reference or pointer");
+			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
+			              "Types cannot be reference or pointer");
 			
 			return MultiContainerRange<const TComponents...>(std::forward<std::vector<ComponentContainer *>>
 					                                                 (const_cast<BasicWorld *>(this)->CollectVectorsOf<TComponents...>()));
@@ -341,7 +351,7 @@ namespace flf
 			// place new ComponentVector into that location
 			createdContainer = new(createdContainer) ComponentContainer(_containerResource);
 			std::pmr::vector<IdType> ids{infos.size(), &_tempResource};
-			for(std::size_t i = 0; i < infos.size(); ++i)
+			for (std::size_t i = 0; i < infos.size(); ++i)
 			{
 				createdContainer->AddVector(infos[i], constructors[i], GetMemoryResource(infos[i].id));
 				ids[i] = infos[i].id;
@@ -407,7 +417,8 @@ namespace flf
 		}
 		
 		template<typename ...TComponents, typename ...TComponentsToAdd>
-		inline Iterator<TComponents...> CreateMultipleWith(internal::TypeList<TComponents...>, EntityId numEntities, TComponentsToAdd &&...args)
+		inline Iterator<TComponents...>
+		CreateMultipleWith(internal::TypeList<TComponents...>, EntityId numEntities, TComponentsToAdd &&...args)
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
 			return vec.Clone(numEntities, std::forward<TComponentsToAdd>(args)...);
@@ -427,12 +438,13 @@ namespace flf
 			ComponentContainer &source = ContainerOf(entity.Id());
 			
 			std::array<IdType, sizeof...(TAddedComponents)> tIdsToAdd = {TypeId<TAddedComponents> ...};
-			const MultiIdType destinationTypeId = internal::CombineIds(source.GetIds().cbegin(), source.GetIds().cend(), tIdsToAdd.cbegin(), tIdsToAdd.cend());
+			const MultiIdType destinationTypeId = internal::CombineIds(source.GetIds().cbegin(), source.GetIds().cend(), tIdsToAdd.cbegin(),
+			                                                           tIdsToAdd.cend());
 			
 			ComponentContainer *destination{};
-			if(_componentContainers.count(destinationTypeId))
+			if (_componentContainers.count(destinationTypeId))
 			{
-				destination= _componentContainers.at(destinationTypeId);
+				destination = _componentContainers.at(destinationTypeId);
 			} else
 			{
 				// need to create a new container for this entity
@@ -441,14 +453,17 @@ namespace flf
 				
 				// the vector is already sorted, we only need to insert the new data at the correct position to keep it sorted
 				std::array<TypeInformation, sizeof...(TAddedComponents)> tInfosToAdd = {TypeInformation::Of<TAddedComponents>() ...};
-				std::array<internal::ConstructorVTable, sizeof...(TAddedComponents)> constructorsToAdd = {internal::ConstructorVTable::Of<TAddedComponents>() ...};
-				for(std::size_t i = 0; i < tIdsToAdd.size(); ++i)
+				std::array<internal::ConstructorVTable, sizeof...(TAddedComponents)> constructorsToAdd = {
+						internal::ConstructorVTable::Of<TAddedComponents>() ...};
+				for (std::size_t i = 0; i < tIdsToAdd.size(); ++i)
 				{
 					std::size_t insertionPosition = 0;
-					for(; insertionPosition < tInfos.size(); ++insertionPosition)
+					for (; insertionPosition < tInfos.size(); ++insertionPosition)
 					{
-						if(tInfosToAdd[i].id < tInfos[insertionPosition].id)
+						if (tInfosToAdd[i].id < tInfos[insertionPosition].id)
+						{
 							break;
+						}
 					}
 					
 					// add info here
@@ -471,7 +486,7 @@ namespace flf
 		{
 			constexpr MultiIdType id = MultiTypeId<TComponents...>;
 			
-			if(_componentContainers.count(id) != 0)
+			if (_componentContainers.count(id) != 0)
 			{
 				return *_componentContainers.at(id);
 			} else
@@ -509,7 +524,7 @@ namespace flf
 		/// \return a reference to that memory resource
 		TMemResource &GetMemoryResource(IdType id) FLUFF_NOEXCEPT
 		{
-			if(_resources.count(id) != 0)
+			if (_resources.count(id) != 0)
 			{
 				return *_resources.at(id);
 			} else
@@ -542,11 +557,13 @@ namespace flf
 	template<typename TComponent>
 	TComponent *Entity::Get() noexcept
 	{
-		if(not _world) FLUFF_UNLIKELY
+		if (not _world) FLUFF_UNLIKELY
+		{
 			return nullptr;
+		}
 		
 		ComponentContainer &cont = _world->ContainerOf(Id());
-		if(cont.ContainsId(Id()))
+		if (cont.ContainsId(Id()))
 		{
 			return &cont.Get<TComponent>(Id());
 		} else
@@ -558,11 +575,13 @@ namespace flf
 	template<typename TComponent>
 	const TComponent *Entity::Get() const noexcept
 	{
-		if(not _world) FLUFF_UNLIKELY
+		if (not _world) FLUFF_UNLIKELY
+		{
 			return nullptr;
+		}
 		
 		ComponentContainer &cont = _world->ContainerOf(Id());
-		if(cont.ContainsId(Id()))
+		if (cont.ContainsId(Id()))
 		{
 			return &cont.Get<TComponent>(Id());
 		} else
@@ -580,8 +599,10 @@ namespace flf
 	template<typename TComponent>
 	bool Entity::Has() const noexcept
 	{
-		if(not _world) FLUFF_UNLIKELY
+		if (not _world) FLUFF_UNLIKELY
+		{
 			return false;
+		}
 		
 		const ComponentContainer &cont = _world->ContainerOf(Id());
 		return cont.ContainsId(Id());

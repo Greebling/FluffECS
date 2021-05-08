@@ -220,38 +220,39 @@ namespace flf
 			template<size_type ...Is>
 			inline reference CreateReference(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
 			{
-				return {_vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
+				return {_vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
 			inline PackType<EntityId, TComponents &...> CreateEntityReference(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
 			{
-				return {_ids[_currIndex], _vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
+				return {_ids[_currIndex], _vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
 			inline const_reference CreateConstReference(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
 			{
-				return {_vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
+				return {_vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
-			inline PackType<EntityId, const TComponents &...> CreateEntityReference(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
+			inline PackType<EntityId, const TComponents &...>
+			CreateEntityReference(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
 			{
-				return {_ids[_currIndex], _vectors[Is]->template Get<PureType<TComponents>>(_currIndex)...};
+				return {_ids[_currIndex], _vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			
 			template<size_type ...Is>
 			inline pointer CreatePointer(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
 			{
-				return {(&_vectors[Is]->template Get<PureType<TComponents>>(_currIndex))...};
+				return {(&_vectors[Is]->template Get<PureType < TComponents>>(_currIndex))...};
 			}
 			
 			template<size_type ...Is>
 			inline const_pointer CreateConstPointer(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
 			{
-				return {(&_vectors[Is]->template Get<PureType<TComponents>>(_currIndex))...};
+				return {(&_vectors[Is]->template Get<PureType < TComponents>>(_currIndex))...};
 			}
 		
 		private:
@@ -395,21 +396,21 @@ namespace flf
 		{
 			assert(ContainsId(id) && "Entity was not in Container");
 			
-			if(!ContainsId(id))
+			if (!ContainsId(id))
 			{
 				// we have nothing to delete
 				return;
 			}
 			
 			
-			if(const auto index = IndexOf(id); index != Size())
+			if (const auto index = IndexOf(id); index != Size())
 			{
 				const EntityId movedEntity = _componentIds.back();
 				_componentIds[index] = movedEntity;
 				_sparse.SetEntry(movedEntity, index);
 				
 				// move components from back to index as we don't need the data at index anymore
-				for(IndexType i = 0; i < _typeInfos.size(); ++i)
+				for (IndexType i = 0; i < _typeInfos.size(); ++i)
 				{
 					const auto tInfo = _typeInfos[i];
 					auto &currVector = _componentVectors[i];
@@ -428,7 +429,7 @@ namespace flf
 			
 			// Pop back vectors; data at end may be removed
 			_componentIds.pop_back();
-			for(IndexType i = 0; i < _typeInfos.size(); ++i)
+			for (IndexType i = 0; i < _typeInfos.size(); ++i)
 			{
 				_componentVectors[i].PopBackBytes(_typeInfos[i].size);
 			}
@@ -453,10 +454,13 @@ namespace flf
 		
 		[[nodiscard]] inline IndexType Capacity() const noexcept
 		{
-			if(_componentVectors.empty())
+			if (_componentVectors.empty())
+			{
 				return _componentIds.capacity();
-			else
+			} else
+			{
 				return _componentVectors[0].ByteCapacity() / _typeInfos[0].size;
+			}
 		}
 	
 	public:
@@ -464,13 +468,13 @@ namespace flf
 		{
 			MultiIdType result = 0;
 			auto begin = _typeInfos.cbegin();
-			for(; begin < _typeInfos.cend(); ++begin)
+			for (; begin < _typeInfos.cend(); ++begin)
 			{
 				result = result xor (begin->id + 0x9e3779b9);
 			}
 			
 			begin = _typeInfos.cbegin();
-			for(; begin < _typeInfos.cend(); ++begin)
+			for (; begin < _typeInfos.cend(); ++begin)
 			{
 				result += begin->id;
 			}
@@ -492,7 +496,8 @@ namespace flf
 		{
 			assert("Type already in container!" && !ContainsType(TypeId<TComponent>));
 			
-			internal::DynamicVector &createdVector = AddVector(TypeInformation::Of<TComponent>(), internal::ConstructorVTable::Of<TComponent>(), resource);
+			internal::DynamicVector &createdVector = AddVector(TypeInformation::Of<TComponent>(),
+			                                                   internal::ConstructorVTable::Of<TComponent>(), resource);
 			createdVector.Reserve<TComponent>(VECTOR_PRE_RESERVE_AMOUNT);
 			return createdVector;
 		}
@@ -501,7 +506,8 @@ namespace flf
 		/// \param type to contain
 		/// \param resource to use for the vector
 		/// \return a pointer to the created vector
-		internal::DynamicVector &AddVector(TypeInformation type, internal::ConstructorVTable constructors, std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
+		internal::DynamicVector &
+		AddVector(TypeInformation type, internal::ConstructorVTable constructors, std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 		{
 			assert(!ContainsType(type.id) && "Type already in container!");
 			
@@ -538,7 +544,7 @@ namespace flf
 			
 			const auto index = IndexOf(id);
 			
-			for(std::size_t i = 0; i < _typeInfos.size(); ++i)
+			for (std::size_t i = 0; i < _typeInfos.size(); ++i)
 			{
 				const TypeInformation tInfo = _typeInfos[i];
 				
@@ -547,11 +553,11 @@ namespace flf
 				const auto bytePosition = tInfo.size * index;
 				
 				
-				if(targetVector)
+				if (targetVector)
 				{
 					targetVector->PushBackBytesUnsafe(tInfo.size);
 					// copy data to target
-					if(ownByteData)
+					if (ownByteData)
 					{
 						void *dataToMove = ownByteData->GetBytes(bytePosition);
 						
@@ -596,9 +602,9 @@ namespace flf
 		/// \return true if the type has a corresponding dynamic vector in this container
 		[[nodiscard]] inline bool ContainsType(IdType type) const noexcept
 		{
-			for(const auto tInfo : _typeInfos)
+			for (const auto tInfo : _typeInfos)
 			{
-				if(tInfo.id == type)
+				if (tInfo.id == type)
 				{
 					return true;
 				}
@@ -652,7 +658,7 @@ namespace flf
 			_componentIds.resize(endSize);
 			_sparse.Resize(endSize);
 			
-			for(IndexType i = beginSize; i < endSize; ++i)
+			for (IndexType i = beginSize; i < endSize; ++i)
 			{
 				auto index = world->TakeNextFreeIndex(*this);
 				_sparse.SetEntry(index, i);
@@ -671,9 +677,9 @@ namespace flf
 		/// \return A pointer to the vector or nullptr if there is no vector containing that type
 		[[nodiscard]] inline internal::DynamicVector *GetVector(IdType type) noexcept
 		{
-			for(std::size_t i = 0; i < _typeInfos.size(); ++i)
+			for (std::size_t i = 0; i < _typeInfos.size(); ++i)
 			{
-				if(_typeInfos[i].id == type)
+				if (_typeInfos[i].id == type)
 				{
 					return &_componentVectors[i];
 				}
@@ -686,9 +692,9 @@ namespace flf
 		/// \return A pointer to the vector or nullptr if there is no vector containing that type
 		[[nodiscard]] inline const internal::DynamicVector *GetVector(IdType type) const noexcept
 		{
-			for(std::size_t i = 0; i < _typeInfos.size(); ++i)
+			for (std::size_t i = 0; i < _typeInfos.size(); ++i)
 			{
-				if(_typeInfos[i].id == type)
+				if (_typeInfos[i].id == type)
 				{
 					return &_componentVectors[i];
 				}
@@ -702,8 +708,8 @@ namespace flf
 	
 	public:
 		/// Point to the owning world, where this container is located. Useful for getting the next free EntityId
-		internal::WorldInternal* world{};
-		
+		internal::WorldInternal *world{};
+	
 	private:
 		/// The resource the vectors own data is saved in
 		std::pmr::memory_resource *_ownResource = nullptr;
