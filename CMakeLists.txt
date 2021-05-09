@@ -6,7 +6,7 @@ project(FluffECS
 
 add_library(FluffECS INTERFACE)
 
-target_compile_options(FluffECS INTERFACE -Wall -Wextra -Wpedantic -pedantic-errors)
+target_compile_options(FluffECS INTERFACE -Wall -Wextra -Wpedantic -pedantic-errors -Wno-unknown-attributes)
 
 target_sources(FluffECS
         INTERFACE
