@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_ITERATORCONTAINER_H
-#define FLUFFTEST_ITERATORCONTAINER_H
+#pragma once
 
 #include <utility>
 
@@ -103,5 +102,3 @@ namespace flf
 	
 	
 }
-
-#endif //FLUFFTEST_ITERATORCONTAINER_H

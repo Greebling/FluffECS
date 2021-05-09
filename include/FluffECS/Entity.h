@@ -1,5 +1,4 @@
-#ifndef FLUFF_ECS_ENTITY_H
-#define FLUFF_ECS_ENTITY_H
+#pragma once
 
 namespace flf
 {
@@ -53,6 +52,10 @@ namespace flf
 		template<typename TComponent>
 		[[nodiscard]] inline bool Has() const noexcept;
 		
+		/// Checks whether this entity is still existing in the world
+		[[nodiscard]] inline bool IsDead() const noexcept;
+		
+		/// Kills the entity, destroying all of its components
 		inline void Destroy() FLUFF_NOEXCEPT;
 	
 	private:
@@ -62,5 +65,3 @@ namespace flf
 		internal::WorldInternal *_world = nullptr;
 	};
 }
-
-#endif //FLUFF_ECS_ENTITY_H

@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_WORLDINTERNAL_H
-#define FLUFFTEST_WORLDINTERNAL_H
+#pragma once
 
 #include <memory_resource>
 #include <utility>
@@ -72,5 +71,3 @@ namespace flf::internal
 		internal::SparseSet<ComponentContainer *, EntityId> _entityToContainer{_sparseMemory};
 	};
 }
-
-#endif //FLUFFTEST_WORLDINTERNAL_H

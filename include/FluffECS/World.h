@@ -1,5 +1,4 @@
-#ifndef FLUFF_ECS_WORLD_H
-#define FLUFF_ECS_WORLD_H
+#pragma once
 
 #include <vector>
 #include <array>
@@ -247,6 +246,7 @@ namespace flf
 		/// Adds one or more new components to a given entity
 		/// \tparam TComponents types to add (automatically deducted)
 		/// \param entity to add the component to
+		/// \param comps components to add
 		template<typename ...TComponents>
 		void AddComponent(Entity entity, TComponents &&...comps) FLUFF_NOEXCEPT
 		{
@@ -399,14 +399,14 @@ namespace flf
 		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>) FLUFF_NOEXCEPT
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
-			return Entity(vec.PushBack<TComponents...>(), *static_cast<internal::WorldInternal *>(this));
+			return Entity(vec.PushBack<TComponents...>(), *this);
 		}
 		
 		template<typename ...TComponents, typename ...TAddedComponents>
 		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>, TAddedComponents &&...args) FLUFF_NOEXCEPT
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
-			return Entity(vec.EmplaceBack(std::forward<TAddedComponents>(args)...), *static_cast<internal::WorldInternal *>(this));
+			return Entity(vec.EmplaceBack(std::forward<TAddedComponents>(args)...), *this);
 		}
 		
 		template<typename ...TComponents>
@@ -594,6 +594,7 @@ namespace flf
 	{
 		ComponentContainer &cont = _world->ContainerOf(Id());
 		cont.Remove(Id());
+		_world = nullptr; // just to be safe
 	}
 	
 	template<typename TComponent>
@@ -605,7 +606,17 @@ namespace flf
 		}
 		
 		const ComponentContainer &cont = _world->ContainerOf(Id());
-		return cont.ContainsId(Id());
+		return cont.ContainsType(TypeId<TComponent>()) && cont.ContainsId(Id());
+	}
+	
+	bool Entity::IsDead() const noexcept
+	{
+		if (not _world) FLUFF_UNLIKELY
+		{
+			return true;
+		}
+		
+		const ComponentContainer &cont = _world->ContainerOf(Id());
+		return not cont.ContainsId(Id());
 	}
 }
-#endif //FLUFF_ECS_WORLD_H

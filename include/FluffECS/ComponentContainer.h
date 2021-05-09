@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_COMPONENTCONTAINER_H
-#define FLUFFTEST_COMPONENTCONTAINER_H
+#pragma once
 
 #include <cassert>
 #include <vector>
@@ -738,4 +737,3 @@ namespace flf
 	
 	
 }
-#endif //FLUFFTEST_COMPONENTCONTAINER_H

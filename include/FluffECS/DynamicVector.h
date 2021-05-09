@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_DYNAMICVECTOR_H
-#define FLUFFTEST_DYNAMICVECTOR_H
+#pragma once
 
 #include <cstddef>
 #include <cassert>
@@ -482,5 +481,3 @@ namespace flf::internal
 		}
 	};
 }
-
-#endif //FLUFFTEST_DYNAMICVECTOR_H

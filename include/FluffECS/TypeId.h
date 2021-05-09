@@ -1,5 +1,4 @@
-#ifndef FLUFF_ECS_TYPEID_H
-#define FLUFF_ECS_TYPEID_H
+#pragma once
 
 #include <cstdint>
 #include <cstddef>
@@ -141,5 +140,3 @@ namespace flf
 		TypeInformation() noexcept = default;
 	};
 }
-
-#endif //FLUFF_ECS_TYPEID_H

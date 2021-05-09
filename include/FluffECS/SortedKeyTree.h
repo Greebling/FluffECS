@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_SORTEDKEYTREE_H
-#define FLUFFTEST_SORTEDKEYTREE_H
+#pragma once
 
 #include <vector>
 #include <array>
@@ -327,5 +326,3 @@ namespace flf::internal
 		Node _head{&_resource};
 	};
 }
-
-#endif //FLUFFTEST_SORTEDKEYTREE_H

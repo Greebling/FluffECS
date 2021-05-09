@@ -1,5 +1,4 @@
-#ifndef FLUFF_ECS_SERIALIZATION_H
-#define FLUFF_ECS_SERIALIZATION_H
+#pragma once
 
 #include <fstream>
 #include "ComponentContainer.h"
@@ -67,5 +66,3 @@ namespace flf
 		stream.read(reinterpret_cast<char *>(place.data()), size * sizeof(T));
 	}
 }
-
-#endif //FLUFF_ECS_SERIALIZATION_H
