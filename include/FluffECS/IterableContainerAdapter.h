@@ -1,5 +1,4 @@
-#ifndef FLUFFECSTEST_ITERABLECONTAINER_H
-#define FLUFFECSTEST_ITERABLECONTAINER_H
+#pragma once
 
 #include <iterator>
 #include <array>
@@ -60,4 +59,3 @@ namespace flf
 		}
 	};
 }
-#endif //FLUFFECSTEST_ITERABLECONTAINER_H

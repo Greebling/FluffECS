@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_VIRTUALCONSTRUCTOR_H
-#define FLUFFTEST_VIRTUALCONSTRUCTOR_H
+#pragma once
 
 namespace flf::internal
 {
@@ -51,5 +50,3 @@ namespace flf::internal
 		void (*destruct)(void *at);
 	};
 }
-
-#endif //FLUFFTEST_VIRTUALCONSTRUCTOR_H

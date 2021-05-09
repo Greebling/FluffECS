@@ -1,5 +1,4 @@
-#ifndef FLUFF_ECS_TYPELIST_H
-#define FLUFF_ECS_TYPELIST_H
+#pragma once
 
 #include <utility>
 #include <type_traits>
@@ -99,5 +98,3 @@ namespace flf::internal
 		}
 	}
 }
-
-#endif //FLUFF_ECS_TYPELIST_H

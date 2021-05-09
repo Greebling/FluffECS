@@ -1,18 +1,10 @@
-#ifndef FLUFF_ECS_SERIALIZATION_H
-#define FLUFF_ECS_SERIALIZATION_H
+#pragma once
 
 #include <fstream>
 #include "ComponentContainer.h"
 
 namespace flf
 {
-	template<typename T>
-	inline constexpr bool IsSerializable = false;
-	
-	/// Marks the given type as specially serializable. Types marked as such need to implement the
-	/// methods Serialize(std::ofstream &) and Deserialize(std::ifstream &)
-#define Fluff_MarkSpecialSerializable(Type)namespace fluff { template<> inline constexpr bool IsSerializable< Type > = true;}
-	
 	/// Helper function for easier binary serialisation
 	/// \param stream to write to
 	/// \param value to write into stream
@@ -67,5 +59,3 @@ namespace flf
 		stream.read(reinterpret_cast<char *>(place.data()), size * sizeof(T));
 	}
 }
-
-#endif //FLUFF_ECS_SERIALIZATION_H

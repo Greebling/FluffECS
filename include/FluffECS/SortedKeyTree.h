@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_SORTEDKEYTREE_H
-#define FLUFFTEST_SORTEDKEYTREE_H
+#pragma once
 
 #include <vector>
 #include <array>
@@ -80,6 +79,7 @@ namespace flf::internal
 					return _next.size() - 1;
 				}
 				
+				// binary search for the given key
 				std::size_t startIndex = 0;
 				std::size_t endIndex = _next.size();
 				
@@ -326,5 +326,3 @@ namespace flf::internal
 		Node _head{&_resource};
 	};
 }
-
-#endif //FLUFFTEST_SORTEDKEYTREE_H

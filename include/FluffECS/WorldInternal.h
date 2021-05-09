@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_WORLDINTERNAL_H
-#define FLUFFTEST_WORLDINTERNAL_H
+#pragma once
 
 #include <memory_resource>
 #include <utility>
@@ -50,7 +49,7 @@ namespace flf::internal
 		inline EntityId TakeNextFreeIndex(ComponentContainer &owner) FLUFF_NOEXCEPT
 		{
 			auto index = _nextFreeIndex;
-			// TODO: This is a performance bottleneck. Can we make this more efficient than taking most of the time of creating many entities?
+			// TODO: This is a performance bottleneck. Can we make this more efficient than taking much of the time of creating many entities?
 			_entityToContainer.AddEntry(index, &owner);
 			
 			++_nextFreeIndex;
@@ -72,5 +71,3 @@ namespace flf::internal
 		internal::SparseSet<ComponentContainer *, EntityId> _entityToContainer{_sparseMemory};
 	};
 }
-
-#endif //FLUFFTEST_WORLDINTERNAL_H

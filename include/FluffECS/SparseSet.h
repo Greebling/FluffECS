@@ -1,5 +1,4 @@
-#ifndef FLUFFTEST_SPARSESET_H
-#define FLUFFTEST_SPARSESET_H
+#pragma once
 
 #include <cstddef>
 #include <vector>
@@ -69,5 +68,3 @@ namespace flf::internal
 		std::pmr::vector<T> _sparse;
 	};
 }
-
-#endif //FLUFFTEST_SPARSESET_H

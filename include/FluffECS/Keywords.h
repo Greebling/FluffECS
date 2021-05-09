@@ -1,10 +1,9 @@
-#ifndef FLUFF_ECS_KEYWORDS_H
-#define FLUFF_ECS_KEYWORDS_H
+#pragma once
 
 #define FLUFF_NOEXCEPT noexcept
 
 #if __cplusplus > 201703L
-/// C++20
+/// C++20 features
 #define FLUFF_LIKELY [[likely]]
 #define FLUFF_UNLIKELY [[unlikely]]
 #else
@@ -12,5 +11,3 @@
 #define FLUFF_LIKELY
 #define FLUFF_UNLIKELY
 #endif
-
-#endif //FLUFF_ECS_KEYWORDS_H
