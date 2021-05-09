@@ -80,6 +80,7 @@ namespace flf::internal
 					return _next.size() - 1;
 				}
 				
+				// binary search for the given key
 				std::size_t startIndex = 0;
 				std::size_t endIndex = _next.size();
 				

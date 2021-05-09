@@ -50,7 +50,7 @@ namespace flf::internal
 		inline EntityId TakeNextFreeIndex(ComponentContainer &owner) FLUFF_NOEXCEPT
 		{
 			auto index = _nextFreeIndex;
-			// TODO: This is a performance bottleneck. Can we make this more efficient than taking most of the time of creating many entities?
+			// TODO: This is a performance bottleneck. Can we make this more efficient than taking much of the time of creating many entities?
 			_entityToContainer.AddEntry(index, &owner);
 			
 			++_nextFreeIndex;

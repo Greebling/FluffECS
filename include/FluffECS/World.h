@@ -1,11 +1,11 @@
 #ifndef FLUFF_ECS_WORLD_H
 #define FLUFF_ECS_WORLD_H
 
-#include <unordered_map>
 #include <vector>
 #include <array>
 #include <memory_resource>
 #include <algorithm>
+#include <unordered_map>
 
 #include "Keywords.h"
 #include "TypeId.h"
@@ -155,7 +155,7 @@ namespace flf
 			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
 			
-			return ContainerOf(entity.Id()).template GetNext<TComponent>(entity.Id());
+			return ContainerOf(entity.Id()).template Get<TComponent>(entity.Id());
 		}
 		
 		/// Gets the component of a given entity
@@ -168,7 +168,7 @@ namespace flf
 			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
 			
-			return ContainerOf(entity.Id()).template GetNext<TComponent>(entity.Id());
+			return ContainerOf(entity.Id()).template Get<TComponent>(entity.Id());
 		}
 		
 		/// Creates an entity with the given types
