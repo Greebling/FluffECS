@@ -3,7 +3,10 @@
 #include <cstdint>
 #include <cstddef>
 #include <type_traits>
+
+#if _MSC_VER && !__INTEL_COMPILER // yeah msvc getting the special treatment (https://en.cppreference.com/w/cpp/language/operator_alternative)
 #include <ciso646>
+#endif
 
 namespace flf
 {
@@ -20,7 +23,7 @@ namespace flf
 				return basis;
 			} else
 			{
-				return HashString(str + 1, stringSize - 1, (basis xor (unsigned int) str[0]) * 16777619u);
+				return HashString(str + 1, stringSize - 1, (basis xor (IdType) str[0]) * 16777619u);
 			}
 		}
 		
@@ -30,110 +33,39 @@ namespace flf
 		{
 #if defined __clang__ || defined __GNUC__
 			return HashString(__PRETTY_FUNCTION__, sizeof(__PRETTY_FUNCTION__));
-#elif defined _MSC_VER
+#elif _MSC_VER && !__INTEL_COMPILER
 			return HashString(__FUNCSIG__, sizeof(__FUNCSIG__));
 #else // not compatible with other compilers
 			static_assert(false, "constexpr TypeID is not supported by your Compiler! Choose either Clang, GCC or MSVC");
 			return 0;
 #endif
 		}
-		
-		template<IdType ...ids>
-		static constexpr MultiIdType CombineIds()
-		{
-			return ((ids + 0x9e3779b9) xor ... xor 0) + (ids + ... + 0);
-		}
-		
-		template<typename TIterator>
-		static MultiIdType CombineIds(TIterator begin, TIterator end, IdType typeToAdd)
-		{
-			MultiIdType result = 0;
-			TIterator beginXor = begin;
-			for (; beginXor < end; ++beginXor)
-			{
-				result = result xor (*beginXor + 0x9e3779b9);
-			}
-			result = result xor (typeToAdd + 0x9e3779b9);
-			
-			for (; begin < end; ++begin)
-			{
-				result += *begin;
-			}
-			result += typeToAdd;
-			
-			return result;
-		}
-		
-		template<typename TIterator1, typename TIterator2>
-		static MultiIdType CombineIds(TIterator1 begin1, TIterator1 end1, TIterator2 begin2, TIterator2 end2)
-		{
-			MultiIdType result = 0;
-			TIterator1 curr1 = begin1;
-			for (; curr1 < end1; ++curr1)
-			{
-				result = result xor (*curr1 + 0x9e3779b9);
-			}
-			TIterator2 curr2 = begin2;
-			for (; curr2 < end2; ++curr2)
-			{
-				result = result xor (*curr2 + 0x9e3779b9);
-			}
-			
-			for (; begin1 < end1; ++begin1)
-			{
-				result += *begin1;
-			}
-			for (; begin2 < end2; ++begin2)
-			{
-				result += *begin2;
-			}
-			
-			return result;
-		}
-		
-		template<typename TIterator>
-		static MultiIdType CombineIds(TIterator begin, TIterator end)
-		{
-			MultiIdType result = 0;
-			TIterator beginXor = begin;
-			for (; beginXor < end; ++beginXor)
-			{
-				result = result xor (*beginXor + 0x9e3779b9);
-			}
-			
-			for (; begin < end; ++begin)
-			{
-				result += *begin;
-			}
-			
-			return result;
-		}
 	}
 	
 	
-	
-	template<typename T>
-	std::integral_constant<IdType, internal::TypeIdGenerator<T>()> TypeId;
-	
-	/*
 	template<typename T>
 	constexpr IdType TypeId()
 	{
 		return internal::TypeIdGenerator<T>();
-	}*/
-	
+	}
 	
 	/// Gives the same id for any combination of the same Ts
 	/// \tparam Ts the types of the id
 	template<typename ...Ts>
-	std::integral_constant<MultiIdType, internal::CombineIds<TypeId<Ts>...>()> MultiTypeId;
-	
-	/*
-	template<typename ...Ts>
 	constexpr IdType MultiTypeId()
 	{
-		return internal::CombineIds<TypeId<Ts>()...>();
-	}*/
+		if constexpr(sizeof...(Ts) == 0)
+		{
+			return 0;
+		}
+		else if constexpr(sizeof...(Ts) == 1)
+		{
+			return MultiTypeId<>() xor (..., TypeId<Ts>()); // trick to simply return TypeId<T>()
+		} else
+		{
+			return MultiTypeId<>() xor (TypeId<Ts>() xor ...);
+		}
+	}
 	
 	struct TypeInformation
 	{
@@ -155,4 +87,37 @@ namespace flf
 		
 		TypeInformation() noexcept = default;
 	};
+	
+	namespace internal
+	{
+		template<typename TIterator1, typename TIterator2>
+		static MultiIdType CombineIds(TIterator1 begin1, TIterator1 end1, TIterator2 begin2, TIterator2 end2)
+		{
+			MultiIdType result = MultiTypeId<>();
+			
+			for(;begin1 < end1; begin1++)
+			{
+				result = result xor *begin1;
+			}
+			
+			for(;begin2 < end2; begin2++)
+			{
+				result = result xor *begin2;
+			}
+			
+			return result;
+		}
+		
+		template<typename TIterator>
+		static MultiIdType CombineIds(TIterator begin, TIterator end)
+		{
+			MultiIdType result = MultiTypeId<>();
+			for (; begin < end; ++begin)
+			{
+				result = result xor *begin;
+			}
+			
+			return result;
+		}
+	}
 }

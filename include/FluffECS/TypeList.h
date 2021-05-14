@@ -73,7 +73,7 @@ namespace flf::internal
 		{
 			using THead = decltype(Front(tl));
 			constexpr auto r = Partition(pivot, AllExceptFront(tl));
-			if constexpr (TypeId < typename THead::type > < TypeId < P >)
+			if constexpr (TypeId<typename THead::type>() < TypeId<P>())
 			{
 				return std::pair(TypeList<typename THead::type>{} | r.first, r.second);
 			} else
