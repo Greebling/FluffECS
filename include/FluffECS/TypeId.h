@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <type_traits>
 
-#if _MSC_VER && !__INTEL_COMPILER // yeah msvc getting the special treatment (https://en.cppreference.com/w/cpp/language/operator_alternative)
+#if _MSC_VER && !__INTEL_COMPILER // yeah msvc getting the special treatment... (https://en.cppreference.com/w/cpp/language/operator_alternative)
 #include <ciso646>
 #endif
 
