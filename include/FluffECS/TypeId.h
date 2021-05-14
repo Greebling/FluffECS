@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <type_traits>
+#include <ciso646>
 
 namespace flf
 {
@@ -30,7 +31,7 @@ namespace flf
 #if defined __clang__ || defined __GNUC__
 			return HashString(__PRETTY_FUNCTION__, sizeof(__PRETTY_FUNCTION__));
 #elif defined _MSC_VER
-			return HashString(__FUNCSIG__, sizeof(__FUNCSIG__));*?
+			return HashString(__FUNCSIG__, sizeof(__FUNCSIG__));
 #else // not compatible with other compilers
 			static_assert(false, "constexpr TypeID is not supported by your Compiler! Choose either Clang, GCC or MSVC");
 			return 0;
@@ -110,14 +111,29 @@ namespace flf
 	}
 	
 	
+	
 	template<typename T>
 	std::integral_constant<IdType, internal::TypeIdGenerator<T>()> TypeId;
+	
+	/*
+	template<typename T>
+	constexpr IdType TypeId()
+	{
+		return internal::TypeIdGenerator<T>();
+	}*/
 	
 	
 	/// Gives the same id for any combination of the same Ts
 	/// \tparam Ts the types of the id
 	template<typename ...Ts>
 	std::integral_constant<MultiIdType, internal::CombineIds<TypeId<Ts>...>()> MultiTypeId;
+	
+	/*
+	template<typename ...Ts>
+	constexpr IdType MultiTypeId()
+	{
+		return internal::CombineIds<TypeId<Ts>()...>();
+	}*/
 	
 	struct TypeInformation
 	{
@@ -129,7 +145,7 @@ namespace flf
 		template<typename T>
 		static constexpr TypeInformation Of() noexcept
 		{
-			return TypeInformation(TypeId<T>, sizeof(T));
+			return TypeInformation(TypeId<T>(), sizeof(T));
 		}
 		
 		constexpr TypeInformation(IdType id, std::size_t size) noexcept

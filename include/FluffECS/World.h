@@ -58,7 +58,8 @@ namespace flf
 			              "Types cannot be reference or pointer");
 			
 			IteratorContainer<TComponents...> begin = EntitiesWith<TComponents...>().begin();
-			for (flf::EntityId i = 0; i < begin.Size(); ++i)
+			const flf::EntityId entitySize = begin.Size();
+			for (flf::EntityId i = 0; i < entitySize; ++i)
 			{
 				auto iter = begin.iterators[i];
 				
@@ -267,7 +268,7 @@ namespace flf
 			for (auto i : sourceTInfo)
 			{
 				// don't add the type id we actually want to remove
-				if (i.id != TypeId<TComponentToRemove>)
+				if (i.id != TypeId<TComponentToRemove>())
 				{
 					targetIds.push_back(i.id);
 				}
@@ -290,7 +291,7 @@ namespace flf
 				targetConstructors.reserve(targetIds.size());
 				for (std::size_t i = 0; i < targetIds.size(); ++i)
 				{
-					if (sourceTInfo[i].id != TypeId<TComponentToRemove>)
+					if (sourceTInfo[i].id != TypeId<TComponentToRemove>())
 					{
 						targetTypes.push_back(sourceTInfo[i]);
 						targetConstructors.push_back(sourceConstructors[i]);
@@ -384,7 +385,7 @@ namespace flf
 		template<typename ...TComponents>
 		std::vector<ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) noexcept
 		{
-			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents> ...});
+			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents>() ...});
 		}
 		
 		/// Collects all vectors containing at minimum the given components
@@ -392,7 +393,7 @@ namespace flf
 		template<typename ...TComponents>
 		std::vector<const ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) const noexcept
 		{
-			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents> ...});
+			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents>() ...});
 		}
 		
 		template<typename ...TComponents>
@@ -437,7 +438,7 @@ namespace flf
 			assert(Contains(entity.Id())); // Entity does not belong to this World
 			ComponentContainer &source = ContainerOf(entity.Id());
 			
-			std::array<IdType, sizeof...(TAddedComponents)> tIdsToAdd = {TypeId<TAddedComponents> ...};
+			std::array<IdType, sizeof...(TAddedComponents)> tIdsToAdd = {TypeId<TAddedComponents>() ...};
 			const MultiIdType destinationTypeId = internal::CombineIds(source.GetIds().cbegin(), source.GetIds().cend(), tIdsToAdd.cbegin(),
 			                                                           tIdsToAdd.cend());
 			
@@ -484,7 +485,7 @@ namespace flf
 		template<typename ...TComponents>
 		ComponentContainer &GetComponentVector()
 		{
-			constexpr MultiIdType id = MultiTypeId<TComponents...>;
+			constexpr MultiIdType id = MultiTypeId<TComponents...>();
 			
 			if (_componentContainers.count(id) != 0)
 			{
@@ -497,10 +498,10 @@ namespace flf
 				
 				// place new ComponentVector into that location
 				createdVector = new(createdVector) ComponentContainer(_containerResource);
-				((createdVector->AddVector<TComponents>(GetMemoryResource(TypeId<TComponents>))), ...);
+				((createdVector->AddVector<TComponents>(GetMemoryResource(TypeId<TComponents>()))), ...);
 				
 				
-				RegisterVector(createdVector, id, std::pmr::vector<IdType>({TypeId<TComponents>...}, &_tempResource));
+				RegisterVector(createdVector, id, std::pmr::vector<IdType>({TypeId<TComponents>()...}, &_tempResource));
 				return *createdVector;
 			}
 		}

@@ -379,7 +379,7 @@ namespace flf
 		template<typename ...TComponents>
 		inline Iterator<TComponents...> Clone(const IndexType amount, const TComponents &...components) FLUFF_NOEXCEPT
 		{
-			assert((ContainsType(TypeId<TComponents>) && ...) && "Component types are not in this vector");
+			assert((ContainsType(TypeId<TComponents>()) && ...) && "Component types are not in this vector");
 			const auto beginSize = _componentIds.size();
 			const auto endSize = beginSize + amount;
 			
@@ -493,7 +493,7 @@ namespace flf
 		template<typename TComponent>
 		inline internal::DynamicVector &AddVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 		{
-			assert("Type already in container!" && !ContainsType(TypeId<TComponent>));
+			assert("Type already in container!" && !ContainsType(TypeId<TComponent>()));
 			
 			internal::DynamicVector &createdVector = AddVector(TypeInformation::Of<TComponent>(),
 			                                                   internal::ConstructorVTable::Of<TComponent>(), resource);
@@ -521,8 +521,8 @@ namespace flf
 		template<typename TComponent>
 		[[nodiscard]] inline const internal::DynamicVector &GetVector() const noexcept
 		{
-			assert(ContainsType(TypeId<TComponent>) && "Type not in ComponentContainer");
-			return *GetVector(TypeId<TComponent>);
+			assert(ContainsType(TypeId<TComponent>()) && "Type not in ComponentContainer");
+			return *GetVector(TypeId<TComponent>());
 		}
 		
 		/// \tparam TComponent type to contain in the vector
@@ -530,8 +530,8 @@ namespace flf
 		template<typename TComponent>
 		[[nodiscard]] inline internal::DynamicVector &GetVector() noexcept
 		{
-			assert(ContainsType(TypeId<TComponent>) && "Type not in ComponentContainer");
-			return *GetVector(TypeId<TComponent>);
+			assert(ContainsType(TypeId<TComponent>()) && "Type not in ComponentContainer");
+			return *GetVector(TypeId<TComponent>());
 		}
 		
 		/// Moves all data associated with the given entity to another ComponentContainer
@@ -586,7 +586,7 @@ namespace flf
 		template<typename TComponent>
 		[[nodiscard]] inline bool Contains(EntityId id) const noexcept
 		{
-			return ContainsType(TypeId<TComponent>) && ContainsId(id);
+			return ContainsType(TypeId<TComponent>()) && ContainsId(id);
 		}
 		
 		/// Checks whether a given id is in this container
@@ -728,7 +728,7 @@ namespace flf
 		/// Contains vectors of the components
 		VectorOf<internal::DynamicVector> _componentVectors{_ownResource};
 		
-		MultiIdType _containedTypes = MultiTypeId<>; // not initialised to 0 but to 'no types' which is a different value
+		MultiIdType _containedTypes = MultiTypeId<>(); // not initialised to 0 but to 'no types' which is different!
 		
 		template<typename ...TComponents>
 		friend

@@ -31,11 +31,11 @@ namespace flf::internal
 		{
 			Node() noexcept = default;
 			
-			Node(const Node &) noexcept = default;
+			Node(const Node &) = default;
 			
 			Node(Node &&) noexcept = default;
 			
-			Node &operator=(const Node &) noexcept = default;
+			Node &operator=(const Node &) = default;
 			
 			Node &operator=(Node &&) noexcept = default;
 			
