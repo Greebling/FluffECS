@@ -61,13 +61,10 @@ namespace flf
 			const flf::EntityId entitySize = begin.Size();
 			for (flf::EntityId i = 0; i < entitySize; ++i)
 			{
-				auto iter = begin.iterators[i];
-				
-				while (!iter.IsOverEnd())
+				for (ComponentContainer::Iterator<TComponents...> iter = begin.iterators[i]; not iter.IsOverEnd(); ++iter)
 				{
 					auto tup = iter.GetReference();
 					function(std::get<TComponents &>(tup) ...);
-					++iter;
 				}
 			}
 		}
@@ -82,15 +79,13 @@ namespace flf
 			              "Types cannot be reference or pointer");
 			
 			IteratorContainer<const TComponents...> begin = EntitiesWith<TComponents...>().begin();
-			for (flf::EntityId i = 0; i < begin.Size(); ++i)
+			const flf::EntityId entitySize = begin.Size();
+			for (flf::EntityId i = 0; i < entitySize; ++i)
 			{
-				auto iter = begin.iterators[i];
-				
-				while (!iter.IsOverEnd())
+				for (ComponentContainer::Iterator<TComponents...> iter = begin.iterators[i]; not iter.IsOverEnd(); ++iter)
 				{
 					const auto tup = iter.GetReference();
 					function(std::get<const TComponents &>(tup) ...);
-					++iter;
 				}
 			}
 		}
@@ -107,16 +102,13 @@ namespace flf
 			
 			auto entities = EntitiesWith<TComponents...>();
 			IteratorContainer<TComponents...> begin = entities.begin();
-			
-			for (flf::EntityId i = 0; i < begin.Size(); ++i)
+			const flf::EntityId entitySize = begin.Size();
+			for (flf::EntityId i = 0; i < entitySize; ++i)
 			{
-				auto iter = begin.iterators[i];
-				
-				while (!iter.IsOverEnd())
+				for (ComponentContainer::Iterator<TComponents...> iter = begin.iterators[i]; not iter.IsOverEnd(); ++iter)
 				{
 					auto tup = iter.GetEntityReference();
 					function(std::get<0>(tup), std::get<TComponents &>(tup) ...); // note the get<0> for the id
-					++iter;
 				}
 			}
 		}
@@ -132,15 +124,13 @@ namespace flf
 			              "Types cannot be reference or pointer");
 			
 			IteratorContainer<const TComponents...> begin = EntitiesWith<TComponents...>().begin();
-			for (flf::EntityId i = 0; i < begin.Size(); ++i)
+			const flf::EntityId entitySize = begin.Size();
+			for (flf::EntityId i = 0; i < entitySize; ++i)
 			{
-				auto iter = begin.iterators[i];
-				
-				while (!iter.IsOverEnd())
+				for (ComponentContainer::Iterator<TComponents...> iter = begin.iterators[i]; not iter.IsOverEnd(); ++iter)
 				{
-					const auto tup = iter.GetEntityReference();
-					function(std::get<0>(tup), std::get<const TComponents &>(tup) ...); // note the get<0> for the id
-					++iter;
+					auto tup = iter.GetEntityReference();
+					function(std::get<0>(tup), std::get<TComponents &>(tup) ...); // note the get<0> for the id
 				}
 			}
 		}
