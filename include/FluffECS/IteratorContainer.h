@@ -30,7 +30,7 @@ namespace flf
 		EntityId _currIndex;
 	
 	public:
-		auto Size() const noexcept
+		auto Size() const FLUFF_NOEXCEPT
 		{
 			return iterators.size();
 		}
@@ -47,7 +47,7 @@ namespace flf
 		{
 		}
 		
-		IteratorContainer<TComponents...> begin() FLUFF_NOEXCEPT
+		IteratorContainer<TComponents...> begin() FLUFF_MAYBE_NOEXCEPT
 		{
 			std::vector<Iterator> iterators{};
 			
@@ -62,7 +62,7 @@ namespace flf
 			return IteratorContainer<TComponents...>(std::forward<std::vector<Iterator>>(iterators), 0);
 		}
 		
-		IteratorContainer<TComponents...> end() FLUFF_NOEXCEPT
+		IteratorContainer<TComponents...> end() FLUFF_MAYBE_NOEXCEPT
 		{
 			std::vector<Iterator> iterators{};
 			

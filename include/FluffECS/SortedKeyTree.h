@@ -29,37 +29,37 @@ namespace flf::internal
 		
 		struct Node
 		{
-			Node() noexcept = default;
+			Node() FLUFF_NOEXCEPT = default;
 			
 			Node(const Node &) = default;
 			
-			Node(Node &&) noexcept = default;
+			Node(Node &&) FLUFF_NOEXCEPT = default;
 			
 			Node &operator=(const Node &) = default;
 			
-			Node &operator=(Node &&) noexcept = default;
+			Node &operator=(Node &&) FLUFF_NOEXCEPT = default;
 			
-			explicit Node(std::pmr::memory_resource &resource) noexcept
+			explicit Node(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 					: _next(&resource)
 			{
 			}
 			
-			Node(TKey key, std::pmr::memory_resource &resource) noexcept
+			Node(TKey key, std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 					: _key(key), _next(&resource)
 			{
 			}
 			
-			Node(TKey key, TValue val) noexcept
+			Node(TKey key, TValue val) FLUFF_NOEXCEPT
 					: _value(val), _key(key)
 			{
 			}
 			
-			[[nodiscard]] inline TKey Key() const noexcept
+			[[nodiscard]] inline TKey Key() const FLUFF_NOEXCEPT
 			{
 				return _key;
 			}
 			
-			[[nodiscard]] inline TValue Value() const noexcept
+			[[nodiscard]] inline TValue Value() const FLUFF_NOEXCEPT
 			{
 				return _value;
 			}
@@ -67,7 +67,7 @@ namespace flf::internal
 			/// Searches for all elements that have lower or equal keys in comparison to the given key
 			/// \param key to search for
 			/// \return std::numeric_limits<std::size_t>::max() if none is found, else the key of the highest key below or equal to key
-			[[nodiscard]] std::size_t GetAllUntil(TKey key) const noexcept
+			[[nodiscard]] std::size_t GetAllUntil(TKey key) const FLUFF_NOEXCEPT
 			{
 				if (_next.empty() || _next.front().Key() > key)
 				{
@@ -134,7 +134,7 @@ namespace flf::internal
 			
 			/// Adds a node as a following node
 			/// \param node to add
-			inline Node &AddFollowing(Node &&node) FLUFF_NOEXCEPT
+			inline Node &AddFollowing(Node &&node) FLUFF_MAYBE_NOEXCEPT
 			{
 				std::size_t insertionPos = 0;
 				for (; insertionPos < _next.size(); ++insertionPos)
@@ -148,17 +148,17 @@ namespace flf::internal
 				return _next[insertionPos];
 			}
 			
-			[[nodiscard]] inline bool HasChildren() const noexcept
+			[[nodiscard]] inline bool HasChildren() const FLUFF_NOEXCEPT
 			{
 				return _next.empty();
 			}
 			
-			[[nodiscard]] inline const VectorOf<Node> &Next() const noexcept
+			[[nodiscard]] inline const VectorOf<Node> &Next() const FLUFF_NOEXCEPT
 			{
 				return _next;
 			}
 			
-			[[nodiscard]] inline VectorOf<Node> &Next() noexcept
+			[[nodiscard]] inline VectorOf<Node> &Next() FLUFF_NOEXCEPT
 			{
 				return _next;
 			}
@@ -238,7 +238,7 @@ namespace flf::internal
 		/// \param results vector where fitting values will be saved to
 		template<typename TAlloc>
 		static void CollectFromSeq(const std::vector<TKey, TAlloc> &keySequence, std::size_t seqIndex, const Node &curr,
-		                           std::vector<TValue> &results) noexcept
+		                           std::vector<TValue> &results) FLUFF_NOEXCEPT
 		{
 			if (seqIndex >= keySequence.size())
 			{
@@ -275,7 +275,7 @@ namespace flf::internal
 		/// \param results vector where fitting values will be saved to
 		template<std::size_t ARRAY_SIZE>
 		static void CollectFromSeq(const std::array<TKey, ARRAY_SIZE> &keySequence, std::size_t seqIndex, const Node &curr,
-		                           std::vector<TValue> &results) noexcept
+		                           std::vector<TValue> &results) FLUFF_NOEXCEPT
 		{
 			if (seqIndex >= keySequence.size())
 			{
@@ -308,7 +308,7 @@ namespace flf::internal
 		/// Collects all values of a given node and the values of all its children into the results vector
 		/// \param node
 		/// \param results
-		static void CollectChildValues(const Node &node, std::vector<TValue> &results) noexcept
+		static void CollectChildValues(const Node &node, std::vector<TValue> &results) FLUFF_NOEXCEPT
 		{
 			if (node.Value() != TValue())
 			{

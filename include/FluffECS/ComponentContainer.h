@@ -29,14 +29,14 @@ namespace flf
 		static constexpr IndexType VECTOR_PRE_RESERVE_AMOUNT = 32;
 	
 	public:
-		explicit ComponentContainer(std::pmr::memory_resource &resource) noexcept
+		explicit ComponentContainer(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 				: _ownResource(&resource)
 		{
 		}
 		
-		ComponentContainer() noexcept = default;
+		ComponentContainer() FLUFF_NOEXCEPT = default;
 		
-		ComponentContainer(const ComponentContainer &other) FLUFF_NOEXCEPT
+		ComponentContainer(const ComponentContainer &other) FLUFF_MAYBE_NOEXCEPT
 				: _ownResource(other._ownResource),
 				  _sparse(other._sparse),
 				  _typeInfos(other._typeInfos),
@@ -44,7 +44,7 @@ namespace flf
 		{
 		}
 		
-		ComponentContainer(ComponentContainer &&other) FLUFF_NOEXCEPT
+		ComponentContainer(ComponentContainer &&other) FLUFF_MAYBE_NOEXCEPT
 				: _ownResource(other._ownResource),
 				  _sparse(std::move(other._sparse)),
 				  _typeInfos(std::move(other._typeInfos)),
@@ -84,34 +84,34 @@ namespace flf
 		
 		public:
 			Iterator(ComponentContainer &cont,
-			         size_type index) noexcept
+			         size_type index) FLUFF_NOEXCEPT
 					: _currIndex(index), _vectors{(&cont.GetVector<PureType<TComponents>>())...}, _ids(cont._componentIds)
 			{
 			}
 			
-			Iterator(const self_type &it) noexcept
+			Iterator(const self_type &it) FLUFF_NOEXCEPT
 					: _currIndex(it._currIndex), _vectors(it._vectors), _ids(it._ids)
 			{
 			}
 			
-			Iterator(self_type &&it) noexcept
+			Iterator(self_type &&it) FLUFF_NOEXCEPT
 					: _currIndex(it._currIndex), _vectors(std::move(it._vectors)), _ids(it._ids)
 			{
 			}
 		
 		public:
-			inline pointer GetPointer() FLUFF_NOEXCEPT
+			inline pointer GetPointer() FLUFF_MAYBE_NOEXCEPT
 			{
 				return CreatePointer(std::make_integer_sequence<size_type, sizeof...(TComponents)>());
 			}
 			
 			
-			inline reference GetReference() FLUFF_NOEXCEPT
+			inline reference GetReference() FLUFF_MAYBE_NOEXCEPT
 			{
 				return CreateReference(std::make_integer_sequence<size_type, sizeof...(TComponents)>());
 			}
 			
-			inline PackType<EntityId, TComponents &...> GetEntityReference() FLUFF_NOEXCEPT
+			inline PackType<EntityId, TComponents &...> GetEntityReference() FLUFF_MAYBE_NOEXCEPT
 			{
 				return CreateEntityReference(std::make_integer_sequence<size_type, sizeof...(TComponents)>());
 			}
@@ -124,132 +124,132 @@ namespace flf
 			}
 		
 		public:
-			inline reference operator*() FLUFF_NOEXCEPT
+			inline reference operator*() FLUFF_MAYBE_NOEXCEPT
 			{
 				return GetReference();
 			}
 			
-			inline pointer operator->() FLUFF_NOEXCEPT
+			inline pointer operator->() FLUFF_MAYBE_NOEXCEPT
 			{
 				return GetPointer();
 			}
 			
-			inline reference operator[](size_type index) noexcept
+			inline reference operator[](size_type index) FLUFF_NOEXCEPT
 			{
 				return *(self_type(_vectors, index));
 			}
 			
-			inline self_type &operator++() noexcept
+			inline self_type &operator++() FLUFF_NOEXCEPT
 			{
 				++_currIndex;
 				return *this;
 			}
 			
-			inline self_type &operator--() noexcept
+			inline self_type &operator--() FLUFF_NOEXCEPT
 			{
 				--_currIndex;
 				return *this;
 			}
 			
-			inline self_type operator+(difference_type n) noexcept
+			inline self_type operator+(difference_type n) FLUFF_NOEXCEPT
 			{
 				_currIndex += n;
 				return *this;
 			}
 			
-			inline self_type operator-(difference_type n) noexcept
+			inline self_type operator-(difference_type n) FLUFF_NOEXCEPT
 			{
 				_currIndex -= n;
 				return *this;
 			}
 			
-			inline self_type &operator+=(difference_type n) noexcept
+			inline self_type &operator+=(difference_type n) FLUFF_NOEXCEPT
 			{
 				_currIndex += n;
 				return *this;
 			}
 			
-			inline self_type &operator-=(difference_type n) noexcept
+			inline self_type &operator-=(difference_type n) FLUFF_NOEXCEPT
 			{
 				_currIndex -= n;
 				return *this;
 			}
 			
-			inline self_type operator+(const self_type &other) const noexcept
+			inline self_type operator+(const self_type &other) const FLUFF_NOEXCEPT
 			{
 				return self_type(_vectors, _currIndex + other._currIndex);
 			}
 			
-			inline self_type operator-(const self_type &other) const noexcept
+			inline self_type operator-(const self_type &other) const FLUFF_NOEXCEPT
 			{
 				return self_type(_vectors, _currIndex - other._currIndex);
 			}
 			
-			inline bool operator<(const self_type &other) const noexcept
+			inline bool operator<(const self_type &other) const FLUFF_NOEXCEPT
 			{
 				return _currIndex < other._currIndex;
 			}
 			
-			inline bool operator>(const self_type &other) const noexcept
+			inline bool operator>(const self_type &other) const FLUFF_NOEXCEPT
 			{
 				return _currIndex > other._currIndex;
 			}
 			
-			inline bool operator<=(const self_type &other) const noexcept
+			inline bool operator<=(const self_type &other) const FLUFF_NOEXCEPT
 			{
 				return _currIndex <= other._currIndex;
 			}
 			
-			inline bool operator>=(const self_type &other) const noexcept
+			inline bool operator>=(const self_type &other) const FLUFF_NOEXCEPT
 			{
 				return _currIndex >= other._currIndex;
 			}
 			
-			inline friend bool operator==(const self_type &a, const self_type &b) noexcept
+			inline friend bool operator==(const self_type &a, const self_type &b) FLUFF_NOEXCEPT
 			{
 				return a._currIndex == b._currIndex;
 			};
 			
-			inline friend bool operator!=(const self_type &a, const self_type &b) noexcept
+			inline friend bool operator!=(const self_type &a, const self_type &b) FLUFF_NOEXCEPT
 			{
 				return a._currIndex != b._currIndex;
 			};
 		
 		private:
 			template<size_type ...Is>
-			inline reference CreateReference(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
+			inline reference CreateReference(std::integer_sequence<size_type, Is...>) FLUFF_MAYBE_NOEXCEPT
 			{
 				return {_vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
-			inline PackType<EntityId, TComponents &...> CreateEntityReference(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
+			inline PackType<EntityId, TComponents &...> CreateEntityReference(std::integer_sequence<size_type, Is...>) FLUFF_MAYBE_NOEXCEPT
 			{
 				return {_ids[_currIndex], _vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
-			inline const_reference CreateConstReference(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
+			inline const_reference CreateConstReference(std::integer_sequence<size_type, Is...>) const FLUFF_MAYBE_NOEXCEPT
 			{
 				return {_vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			template<size_type ...Is>
 			inline PackType<EntityId, const TComponents &...>
-			CreateEntityReference(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
+			CreateEntityReference(std::integer_sequence<size_type, Is...>) const FLUFF_MAYBE_NOEXCEPT
 			{
 				return {_ids[_currIndex], _vectors[Is]->template Get<PureType < TComponents>>(_currIndex)...};
 			}
 			
 			
 			template<size_type ...Is>
-			inline pointer CreatePointer(std::integer_sequence<size_type, Is...>) FLUFF_NOEXCEPT
+			inline pointer CreatePointer(std::integer_sequence<size_type, Is...>) FLUFF_MAYBE_NOEXCEPT
 			{
 				return {(&_vectors[Is]->template Get<PureType < TComponents>>(_currIndex))...};
 			}
 			
 			template<size_type ...Is>
-			inline const_pointer CreateConstPointer(std::integer_sequence<size_type, Is...>) const FLUFF_NOEXCEPT
+			inline const_pointer CreateConstPointer(std::integer_sequence<size_type, Is...>) const FLUFF_MAYBE_NOEXCEPT
 			{
 				return {(&_vectors[Is]->template Get<PureType < TComponents>>(_currIndex))...};
 			}
@@ -273,9 +273,9 @@ namespace flf
 		/// \param entity the owning entity
 		/// \return a reference to that component
 		template<typename TComponent>
-		[[nodiscard]] inline TComponent &Get(EntityId entity) noexcept
+		[[nodiscard]] inline TComponent &Get(EntityId entity) FLUFF_NOEXCEPT
 		{
-#ifdef FLUF_DO_RANGE_CHECKS
+#ifdef FLUFF_DO_RANGE_CHECKS
 			assert(Contains<TComponent>(entity));
 #endif
 			const auto index = IndexOf(entity);
@@ -287,9 +287,9 @@ namespace flf
 		/// \param entity the owning entity
 		/// \return a reference to that component
 		template<typename TComponent>
-		[[nodiscard]] inline const TComponent &Get(EntityId entity) const noexcept
+		[[nodiscard]] inline const TComponent &Get(EntityId entity) const FLUFF_NOEXCEPT
 		{
-#ifdef FLUF_DO_RANGE_CHECKS
+#ifdef FLUFF_DO_RANGE_CHECKS
 			assert(Contains<TComponent>(entity));
 #endif
 			return GetVector<TComponent>().template Get<TComponent>(IndexOf(entity));
@@ -297,7 +297,7 @@ namespace flf
 		
 		/// \param entity
 		/// \return the index in this container that the entity is assigned to
-		[[nodiscard]] inline IndexType IndexOf(EntityId entity) const FLUFF_NOEXCEPT
+		[[nodiscard]] inline IndexType IndexOf(EntityId entity) const FLUFF_MAYBE_NOEXCEPT
 		{
 			return _sparse[entity];
 		}
@@ -306,7 +306,7 @@ namespace flf
 		/// \tparam TComponents of the entity
 		/// \return the id of the created entity
 		template<typename ...TComponents>
-		EntityId PushBack() FLUFF_NOEXCEPT
+		EntityId PushBack() FLUFF_MAYBE_NOEXCEPT
 		{
 			assert("Given Component types were not in container!" && sizeof...(TComponents) == _typeInfos.size());
 			
@@ -321,7 +321,7 @@ namespace flf
 		/// \tparam TComponents of the entity
 		/// \return the id of the created entity
 		template<typename ...TComponents>
-		EntityId EmplaceBack(TComponents &&...components) FLUFF_NOEXCEPT
+		EntityId EmplaceBack(TComponents &&...components) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(sizeof...(TComponents) == _typeInfos.size() && "Given Component types were not in container!");
 			
@@ -336,7 +336,7 @@ namespace flf
 		/// \tparam TComponents of the entity
 		/// \return An Iterator starting at the first created entity, going until the containers end
 		template<typename ...TComponents>
-		Iterator<TComponents...> CreateMultiple(const EntityId number) FLUFF_NOEXCEPT
+		Iterator<TComponents...> CreateMultiple(const EntityId number) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(sizeof...(TComponents) == _typeInfos.size() && "Given Component types were not in container!");
 			
@@ -356,7 +356,7 @@ namespace flf
 		/// \param id of the entity to clone
 		/// \return An Iterator starting at the first created entity, going until the containers end
 		template<typename ...TComponents>
-		inline Iterator<TComponents...> Clone(const IndexType amount, const EntityId id) FLUFF_NOEXCEPT
+		inline Iterator<TComponents...> Clone(const IndexType amount, const EntityId id) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(ContainsId(id) && "EntityId not found in this container");
 			assert((ContainsType(TypeId<TComponents>()) && ...) && "Component types are not in this vector");
@@ -377,7 +377,7 @@ namespace flf
 		/// \param components to clone from
 		/// \return An Iterator starting at the first created entity, going until the containers end
 		template<typename ...TComponents>
-		inline Iterator<TComponents...> Clone(const IndexType amount, const TComponents &...components) FLUFF_NOEXCEPT
+		inline Iterator<TComponents...> Clone(const IndexType amount, const TComponents &...components) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert((ContainsType(TypeId<TComponents>()) && ...) && "Component types are not in this vector");
 			const auto beginSize = _componentIds.size();
@@ -391,7 +391,7 @@ namespace flf
 		
 		/// Removes all components associated with the given id
 		/// \param id of the entity to remove
-		void Remove(EntityId id) noexcept
+		void Remove(EntityId id) FLUFF_NOEXCEPT
 		{
 			assert(ContainsId(id) && "Entity was not in Container");
 			
@@ -441,17 +441,17 @@ namespace flf
 		}
 		
 		/// \return the list of saved entity ids. the list is in the same order as the component data
-		[[nodiscard]] inline const VectorOf<EntityId> &GetIds() const noexcept
+		[[nodiscard]] inline const VectorOf<EntityId> &GetIds() const FLUFF_NOEXCEPT
 		{
 			return _componentIds;
 		}
 		
-		[[nodiscard]] inline IndexType Size() const noexcept
+		[[nodiscard]] inline IndexType Size() const FLUFF_NOEXCEPT
 		{
 			return _componentIds.size();
 		}
 		
-		[[nodiscard]] inline IndexType Capacity() const noexcept
+		[[nodiscard]] inline IndexType Capacity() const FLUFF_NOEXCEPT
 		{
 			if (_componentVectors.empty())
 			{
@@ -463,7 +463,7 @@ namespace flf
 		}
 	
 	public:
-		[[nodiscard]] inline MultiIdType GetMultiTypeId() const noexcept
+		[[nodiscard]] inline MultiIdType GetMultiTypeId() const FLUFF_NOEXCEPT
 		{
 			MultiIdType result = 0;
 			auto begin = _typeInfos.cbegin();
@@ -491,7 +491,7 @@ namespace flf
 		/// \param resource to use for that vector
 		/// \return a reference to the newly created vector
 		template<typename TComponent>
-		inline internal::DynamicVector &AddVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
+		inline internal::DynamicVector &AddVector(std::pmr::memory_resource &resource) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert("Type already in container!" && !ContainsType(TypeId<TComponent>()));
 			
@@ -506,7 +506,7 @@ namespace flf
 		/// \param resource to use for the vector
 		/// \return a pointer to the created vector
 		internal::DynamicVector &
-		AddVector(TypeInformation type, internal::ConstructorVTable constructors, std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
+		AddVector(TypeInformation type, internal::ConstructorVTable constructors, std::pmr::memory_resource &resource) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(!ContainsType(type.id) && "Type already in container!");
 			
@@ -519,7 +519,7 @@ namespace flf
 		/// \tparam TComponent type to contain in the vector
 		/// \return a reference to a vector containing that type
 		template<typename TComponent>
-		[[nodiscard]] inline const internal::DynamicVector &GetVector() const noexcept
+		[[nodiscard]] inline const internal::DynamicVector &GetVector() const FLUFF_NOEXCEPT
 		{
 			assert(ContainsType(TypeId<TComponent>()) && "Type not in ComponentContainer");
 			return *GetVector(TypeId<TComponent>());
@@ -528,7 +528,7 @@ namespace flf
 		/// \tparam TComponent type to contain in the vector
 		/// \return a reference to a vector containing that type
 		template<typename TComponent>
-		[[nodiscard]] inline internal::DynamicVector &GetVector() noexcept
+		[[nodiscard]] inline internal::DynamicVector &GetVector() FLUFF_NOEXCEPT
 		{
 			assert(ContainsType(TypeId<TComponent>()) && "Type not in ComponentContainer");
 			return *GetVector(TypeId<TComponent>());
@@ -537,7 +537,7 @@ namespace flf
 		/// Moves all data associated with the given entity to another ComponentContainer
 		/// \param destination to move the data to
 		/// \param id associated with the data to be moved
-		void MoveEntityTo(ComponentContainer &destination, EntityId id) FLUFF_NOEXCEPT
+		void MoveEntityTo(ComponentContainer &destination, EntityId id) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(ContainsId(id) && "Id not contained!");
 			
@@ -554,7 +554,7 @@ namespace flf
 				
 				if (targetVector)
 				{
-					targetVector->PushBackBytesUnsafe(tInfo.size);
+					targetVector->PushBackBytesUnsafe(tInfo.size); // TODO: IMPORTANT! Use move constructor for old objects
 					// copy data to target
 					if (ownByteData)
 					{
@@ -574,7 +574,7 @@ namespace flf
 		}
 		
 		/// Reserves a given amount of different component types
-		inline void ReserveComponentTypes(std::size_t amount) FLUFF_NOEXCEPT
+		inline void ReserveComponentTypes(std::size_t amount) FLUFF_MAYBE_NOEXCEPT
 		{
 			_typeInfos.reserve(amount);
 			_componentVectors.reserve(amount);
@@ -584,7 +584,7 @@ namespace flf
 		/// \param id of the entity to be checked
 		/// \return
 		template<typename TComponent>
-		[[nodiscard]] inline bool Contains(EntityId id) const noexcept
+		[[nodiscard]] inline bool Contains(EntityId id) const FLUFF_NOEXCEPT
 		{
 			return ContainsType(TypeId<TComponent>()) && ContainsId(id);
 		}
@@ -592,14 +592,14 @@ namespace flf
 		/// Checks whether a given id is in this container
 		/// \param id to check for
 		/// \return true when the id is in this container
-		[[nodiscard]] inline bool ContainsId(EntityId id) const noexcept
+		[[nodiscard]] inline bool ContainsId(EntityId id) const FLUFF_NOEXCEPT
 		{
 			return _sparse.Contains(id);
 		}
 		
 		/// \param type to check for
 		/// \return true if the type has a corresponding dynamic vector in this container
-		[[nodiscard]] inline bool ContainsType(IdType type) const noexcept
+		[[nodiscard]] inline bool ContainsType(IdType type) const FLUFF_NOEXCEPT
 		{
 			for (const auto tInfo : _typeInfos)
 			{
@@ -612,14 +612,14 @@ namespace flf
 		}
 		
 		/// \return A vector with TypeInformation to all types in this container
-		[[nodiscard]] inline std::vector<TypeInformation> GetContainedTypes() const FLUFF_NOEXCEPT
+		[[nodiscard]] inline std::vector<TypeInformation> GetContainedTypes() const FLUFF_MAYBE_NOEXCEPT
 		{
 			return std::vector<TypeInformation>(_typeInfos.cbegin(), _typeInfos.cend());
 		}
 		
 		
 		/// \return a list of all DynamicVectors that are contained in this
-		[[nodiscard]] inline const VectorOf<internal::DynamicVector> &GetAllVectors() const noexcept
+		[[nodiscard]] inline const VectorOf<internal::DynamicVector> &GetAllVectors() const FLUFF_NOEXCEPT
 		{
 			return _componentVectors;
 		}
@@ -627,7 +627,7 @@ namespace flf
 		/// Sets the used memory resource of the vector to a different one.
 		/// WARNING: May only be used when this container does not contain anything
 		/// \param resource to use for this container
-		void SetOwnMemoryResource(std::pmr::memory_resource &resource) noexcept
+		void SetOwnMemoryResource(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 		{
 			assert((_ownResource == nullptr || _typeInfos.empty()) &&
 			       "Cannot reset memory resource as the previous one was already used");
@@ -638,12 +638,12 @@ namespace flf
 			_componentVectors = VectorOf<internal::DynamicVector>(_ownResource);
 		}
 		
-		[[nodiscard]] const VectorOf<TypeInformation> &GetTypeInfos() const noexcept
+		[[nodiscard]] const VectorOf<TypeInformation> &GetTypeInfos() const FLUFF_NOEXCEPT
 		{
 			return _typeInfos;
 		}
 		
-		[[nodiscard]] const VectorOf<internal::ConstructorVTable> &GetConstructorTable() const noexcept
+		[[nodiscard]] const VectorOf<internal::ConstructorVTable> &GetConstructorTable() const FLUFF_NOEXCEPT
 		{
 			return _constructors;
 		}
@@ -652,7 +652,7 @@ namespace flf
 		/// Register multiple entities at once
 		/// \param beginSize size of the container BEFORE the creation of these entities
 		/// \param endSize size of the container AFTER the creation of these entities
-		void RegisterMultiple(IndexType beginSize, IndexType endSize) FLUFF_NOEXCEPT
+		void RegisterMultiple(IndexType beginSize, IndexType endSize) FLUFF_MAYBE_NOEXCEPT
 		{
 			_componentIds.resize(endSize);
 			_sparse.Resize(endSize);
@@ -666,7 +666,7 @@ namespace flf
 		}
 		
 		/// \return a list of all DynamicVectors that are contained in this
-		[[nodiscard]] inline VectorOf<internal::DynamicVector> &GetAllVectors() noexcept
+		[[nodiscard]] inline VectorOf<internal::DynamicVector> &GetAllVectors() FLUFF_NOEXCEPT
 		{
 			return _componentVectors;
 		}
@@ -674,7 +674,7 @@ namespace flf
 		/// Gets the vector that contains the type with the given TypeId
 		/// \param type to be contained in that vector
 		/// \return A pointer to the vector or nullptr if there is no vector containing that type
-		[[nodiscard]] inline internal::DynamicVector *GetVector(IdType type) noexcept
+		[[nodiscard]] inline internal::DynamicVector *GetVector(IdType type) FLUFF_NOEXCEPT
 		{
 			for (std::size_t i = 0; i < _typeInfos.size(); ++i)
 			{
@@ -689,7 +689,7 @@ namespace flf
 		/// Gets the vector that contains the type with the given TypeId
 		/// \param type to be contained in that vector
 		/// \return A pointer to the vector or nullptr if there is no vector containing that type
-		[[nodiscard]] inline const internal::DynamicVector *GetVector(IdType type) const noexcept
+		[[nodiscard]] inline const internal::DynamicVector *GetVector(IdType type) const FLUFF_NOEXCEPT
 		{
 			for (std::size_t i = 0; i < _typeInfos.size(); ++i)
 			{

@@ -66,7 +66,7 @@ namespace flf
 #endif
 		}
 		
-		constexpr inline IdType HashString(std::string_view str, IdType basis = 2166136261u) noexcept
+		constexpr inline IdType HashString(std::string_view str, IdType basis = 2166136261u) FLUFF_NOEXCEPT
 		{
 			if (str.empty())
 			{
@@ -80,7 +80,7 @@ namespace flf
 		
 		/// Creates a unique IdType for every type
 		template<typename T>
-		constexpr inline IdType GenerateTypeId() noexcept
+		constexpr inline IdType GenerateTypeId() FLUFF_NOEXCEPT
 		{
 			return HashString(GetTypeName<T>());
 		}
@@ -118,17 +118,17 @@ namespace flf
 	
 	public:
 		template<typename T>
-		static constexpr TypeInformation Of() noexcept
+		static constexpr TypeInformation Of() FLUFF_NOEXCEPT
 		{
 			return TypeInformation(TypeId<T>(), sizeof(T));
 		}
 		
-		constexpr TypeInformation(IdType id, std::size_t size) noexcept
+		constexpr TypeInformation(IdType id, std::size_t size) FLUFF_NOEXCEPT
 				: id(id), size(size)
 		{
 		}
 		
-		TypeInformation() noexcept = default;
+		TypeInformation() FLUFF_NOEXCEPT = default;
 	};
 	
 	namespace internal

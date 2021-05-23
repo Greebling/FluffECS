@@ -10,7 +10,7 @@
 #include "VirtualConstructor.h"
 
 /// may be commented out to increase performance when NDEBUG is not defined
-#define FLUF_DO_RANGE_CHECKS
+//#define FLUFF_DO_RANGE_CHECKS
 
 namespace flf::internal
 {
@@ -21,9 +21,9 @@ namespace flf::internal
 		/// how many objects shall be contained at minimum
 		static constexpr size_t MIN_OBJECT_COUNT = 16;
 	public:
-		constexpr ByteVector() noexcept = default;
+		constexpr ByteVector() FLUFF_NOEXCEPT = default;
 		
-		constexpr explicit ByteVector(std::pmr::memory_resource &resource) noexcept
+		constexpr explicit ByteVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 				: _resource(&resource)
 		{
 		}
@@ -31,7 +31,7 @@ namespace flf::internal
 	public:
 		/// Sets the vectors memory resource. Reallocates the current memory, if there is any
 		/// \param resource
-		void SetMemoryResource(std::pmr::memory_resource &resource) noexcept
+		void SetMemoryResource(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 		{
 			if (_begin != _sizeEnd && not resource.is_equal(*_resource))
 			{
@@ -51,23 +51,23 @@ namespace flf::internal
 		}
 		
 		/// \return the size of contained elements in bytes
-		[[nodiscard]] inline std::size_t ByteSize() const noexcept
+		[[nodiscard]] inline std::size_t ByteSize() const FLUFF_NOEXCEPT
 		{
 			return _sizeEnd - _begin;
 		}
 		
 		/// \return the number of bytes reserved for the vector
-		[[nodiscard]] inline std::size_t ByteCapacity() const noexcept
+		[[nodiscard]] inline std::size_t ByteCapacity() const FLUFF_NOEXCEPT
 		{
 			return _capacityEnd - _begin;
 		}
 		
-		[[nodiscard]] void *Data() noexcept
+		[[nodiscard]] void *Data() FLUFF_NOEXCEPT
 		{
 			return _begin;
 		}
 		
-		[[nodiscard]] const void *Data() const noexcept
+		[[nodiscard]] const void *Data() const FLUFF_NOEXCEPT
 		{
 			return _begin;
 		}
@@ -75,7 +75,7 @@ namespace flf::internal
 		/// Similar to PushBack, just with using raw byte data
 		/// \param data to add to the vector
 		/// \param size of the data to add. Note that the size of the type already contained must be equal to size
-		void EmplaceBackBytes(const void *data, std::size_t size) FLUFF_NOEXCEPT
+		void EmplaceBackBytes(const void *data, std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
 			GrowSingle(size);
 			
@@ -85,7 +85,7 @@ namespace flf::internal
 		
 		/// Similar to PushBack, just with using raw byte data
 		/// \param size of the data to add. Note that the size of the type already contained must be equal to size
-		void PushBackBytes(std::size_t size) FLUFF_NOEXCEPT
+		void PushBackBytes(std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
 			GrowSingle(size);
 			
@@ -94,21 +94,21 @@ namespace flf::internal
 		
 		/// Similar to PushBack, just with using raw byte data. Note that this leaves the new bytes uninitialized
 		/// \param size of the data to add. Note that the size of the type already contained must be equal to size
-		void PushBackBytesUnsafe(std::size_t size) FLUFF_NOEXCEPT
+		void PushBackBytesUnsafe(std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
 			GrowSingle(size);
-			std::memset(_sizeEnd, 0, size);
+			//std::memset(_sizeEnd, 0, size); TODO: Is this needed?
 			_sizeEnd += size;
 		}
 		
 		/// Reduces the size of the vector by size bytes
 		/// \param size
-		void PopBackBytes(std::size_t size) noexcept
+		void PopBackBytes(std::size_t size) FLUFF_NOEXCEPT
 		{
 			_sizeEnd -= size;
 		}
 		
-		void *GetBytes(std::size_t offset) noexcept
+		void *GetBytes(std::size_t offset) FLUFF_NOEXCEPT
 		{
 			return _begin + offset;
 		}
@@ -117,7 +117,7 @@ namespace flf::internal
 		
 		/// Grows the vector by increasing the number of components that can be saved whose sizeof() equals byteSize by one
 		/// \param byteSize of the components saved here
-		inline void GrowSingle(std::size_t byteSize) FLUFF_NOEXCEPT
+		inline void GrowSingle(std::size_t byteSize) FLUFF_MAYBE_NOEXCEPT
 		{
 			// grows quadratically in comparison to number of components that can be stored (not in number of pure bytes)
 			const auto previousSize = ByteSize();
@@ -125,7 +125,7 @@ namespace flf::internal
 			ReserveBytes(nextByteCapacity);
 		}
 		
-		inline void ReserveBytes(std::size_t nBytes) FLUFF_NOEXCEPT
+		inline void ReserveBytes(std::size_t nBytes) FLUFF_MAYBE_NOEXCEPT
 		{
 			const auto previousSize = ByteSize();
 			const auto nextCapacity = nBytes;
@@ -140,7 +140,7 @@ namespace flf::internal
 		/// Growth policy of the vector. Returns the next power of 2 that is equal to or larger than n
 		/// \param n amount we want to at least store.
 		/// \return the size the capacity should grow to
-		[[nodiscard]] inline static constexpr std::size_t NextSize(std::size_t n) noexcept
+		[[nodiscard]] inline static constexpr std::size_t NextSize(std::size_t n) FLUFF_NOEXCEPT
 		{
 			if (n == 0) FLUFF_UNLIKELY
 			{
@@ -169,25 +169,20 @@ namespace flf::internal
 	class DynamicVector : public ByteVector
 	{
 	public:
-		constexpr DynamicVector() noexcept = default;
+		constexpr DynamicVector() FLUFF_NOEXCEPT = default;
 		
-		constexpr explicit DynamicVector(std::pmr::memory_resource &resource) noexcept
+		constexpr explicit DynamicVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
 				: ByteVector(resource)
 		{
-		}
-		
-		void SetContainedType()
-		{
-		
 		}
 		
 		/// Calls the destructor of all elements contained in elements
 		/// \tparam T
 		template<typename T>
-		void DestructElements() noexcept(std::is_nothrow_destructible_v<T>)
+		void DestructElements() FLUFF_NOEXCEPT(std::is_nothrow_destructible_v<T>)
 		{
-			for (T *current = std::launder(reinterpret_cast<T *>(_begin)), end = std::launder(reinterpret_cast<T *>(_sizeEnd));
-			     current < end; ++current)
+			T *const end = reinterpret_cast<T *>(_sizeEnd);
+			for (T *current = reinterpret_cast<T *>(_begin); current < end; ++current)
 			{
 				std::destroy_at(current);
 			}
@@ -203,9 +198,9 @@ namespace flf::internal
 		/// \param index of element to get
 		/// \return the element at given index
 		template<typename T>
-		[[nodiscard]] inline T &Get(std::size_t index) noexcept
+		[[nodiscard]] inline T &Get(std::size_t index) FLUFF_NOEXCEPT
 		{
-#ifdef FLUF_DO_RANGE_CHECKS
+#ifdef FLUFF_DO_RANGE_CHECKS
 			assert(index < Size<T>() && "Index out of range");
 #endif
 			return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
@@ -216,9 +211,9 @@ namespace flf::internal
 		/// \param index of element to get
 		/// \return the element at given index
 		template<typename T>
-		[[nodiscard]] inline const T &Get(std::size_t index) const noexcept
+		[[nodiscard]] inline const T &Get(std::size_t index) const FLUFF_NOEXCEPT
 		{
-#ifdef FLUF_DO_RANGE_CHECKS
+#ifdef FLUFF_DO_RANGE_CHECKS
 			assert(index < Size<T>() && "Index out of range");
 #endif
 			return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
@@ -228,7 +223,7 @@ namespace flf::internal
 		/// \tparam T Type of object to get
 		/// \return A reference to the first element of the vector
 		template<typename T>
-		[[nodiscard]] inline T &Front() noexcept
+		[[nodiscard]] inline T &Front() FLUFF_NOEXCEPT
 		{
 			return *std::launder(reinterpret_cast<T *>(_begin));
 		}
@@ -237,7 +232,7 @@ namespace flf::internal
 		/// \tparam T Type of object to get
 		/// \return A reference to the last element of the vector
 		template<typename T>
-		[[nodiscard]] inline T &Back() noexcept
+		[[nodiscard]] inline T &Back() FLUFF_NOEXCEPT
 		{
 			return *(std::launder(reinterpret_cast<T *>(_sizeEnd)) - 1);
 		}
@@ -246,7 +241,7 @@ namespace flf::internal
 		/// \tparam T Type of object to get
 		/// \return A reference to the first element of the vector
 		template<typename T>
-		[[nodiscard]] inline const T &Front() const noexcept
+		[[nodiscard]] inline const T &Front() const FLUFF_NOEXCEPT
 		{
 			return *std::launder(reinterpret_cast<const T *>(_begin));
 		}
@@ -255,12 +250,12 @@ namespace flf::internal
 		/// \tparam T Type of object to get
 		/// \return A reference to the last element of the vector
 		template<typename T>
-		[[nodiscard]] inline const T &Back() const noexcept
+		[[nodiscard]] inline const T &Back() const FLUFF_NOEXCEPT
 		{
 			return *(std::launder(reinterpret_cast<const T *>(_sizeEnd)) - 1);
 		}
 		
-		[[nodiscard]] inline std::byte *BackPtr() noexcept
+		[[nodiscard]] inline std::byte *BackPtr() FLUFF_NOEXCEPT
 		{
 			return _sizeEnd;
 		}
@@ -269,7 +264,7 @@ namespace flf::internal
 		/// \tparam T Type of objects
 		/// \return The number of objects that are contained
 		template<typename T>
-		[[nodiscard]] inline std::size_t Size() const noexcept
+		[[nodiscard]] inline std::size_t Size() const FLUFF_NOEXCEPT
 		{
 			return ByteSize() / sizeof(T);
 		}
@@ -278,7 +273,7 @@ namespace flf::internal
 		/// \tparam T Type of objects
 		/// \return The number of objects that can be contained without a reallocation
 		template<typename T>
-		[[nodiscard]] inline std::size_t Capacity() const noexcept
+		[[nodiscard]] inline std::size_t Capacity() const FLUFF_NOEXCEPT
 		{
 			return ByteCapacity() / sizeof(T);
 		}
@@ -287,7 +282,7 @@ namespace flf::internal
 		/// \tparam T Type of element to add
 		/// \return A reference to the added element
 		template<typename T>
-		inline T &PushBack() FLUFF_NOEXCEPT
+		inline T &PushBack() FLUFF_MAYBE_NOEXCEPT
 		{
 			Reserve<T>(Size<T>() + 1);
 			new(reinterpret_cast<T *>(_sizeEnd)) T();
@@ -300,7 +295,7 @@ namespace flf::internal
 		/// \param element to emplace
 		/// \return A reference to the added element
 		template<typename T>
-		inline T &PushBack(T &element) FLUFF_NOEXCEPT
+		inline T &PushBack(T &element) FLUFF_MAYBE_NOEXCEPT
 		{
 			Reserve<T>(Size<T>() + 1);
 			new(reinterpret_cast<T *>(_sizeEnd)) T(element);
@@ -313,10 +308,10 @@ namespace flf::internal
 		/// \param element to emplace
 		/// \return A reference to the added element
 		template<typename T>
-		inline T &EmplaceBack(T &&element) FLUFF_NOEXCEPT
+		inline T &EmplaceBack(T &&element) FLUFF_MAYBE_NOEXCEPT
 		{
 			Reserve<T>(Size<T>() + 1);
-			new(reinterpret_cast<T *>(_sizeEnd)) T(element);
+			new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<T>(element));
 			_sizeEnd += sizeof(T);
 			return Back<T>();
 		}
@@ -326,13 +321,14 @@ namespace flf::internal
 		/// \param args Constructor arguments to use
 		/// \return A reference the the newly created element
 		template<typename T, typename ...TArgs>
-		inline T &EmplaceBack(TArgs &&...args) FLUFF_NOEXCEPT
+		inline T &EmplaceBack(TArgs &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert(std::is_constructible_v<T, TArgs...>, "Invalid constructor arguments given");
 			
 			Reserve<T>(Size<T>() + 1);
 			new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<TArgs>(args)...);
 			_sizeEnd += sizeof(T);
+			
 			return Back<T>();
 		}
 		
@@ -341,13 +337,12 @@ namespace flf::internal
 		/// \param amount of clones to create
 		/// \param prototype to clone from
 		template<typename T>
-		void Clone(std::size_t amount, const T &prototype) FLUFF_NOEXCEPT
+		void Clone(std::size_t amount, const T &prototype) FLUFF_MAYBE_NOEXCEPT
 		{
 			const auto previousSize = Size<T>();
 			ResizeUnsafe<T>(previousSize + amount);
 			
-			for (T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize;
-			     curr < std::launder(reinterpret_cast<T *>(_sizeEnd)); ++curr)
+			for (T *curr = reinterpret_cast<T *>(_begin) + previousSize, *const end = reinterpret_cast<T *>(_sizeEnd); curr < end; ++curr)
 			{
 				new(curr) T(prototype);
 			}
@@ -356,7 +351,7 @@ namespace flf::internal
 		/// Removes the last element
 		/// \tparam T Destructor of that type will be called on the last element
 		template<typename T>
-		inline void PopBack() noexcept(std::is_nothrow_destructible_v<T>)
+		inline void PopBack() FLUFF_NOEXCEPT(std::is_nothrow_destructible_v<T>)
 		{
 			if (Size<T>() == 0) FLUFF_UNLIKELY
 			{
@@ -371,7 +366,7 @@ namespace flf::internal
 		/// \tparam T Type to use for number of individual elements
 		/// \param number of elements that shall be containable without a new allocations
 		template<typename T>
-		inline void Reserve(std::size_t number) FLUFF_NOEXCEPT
+		void Reserve(std::size_t number) FLUFF_MAYBE_NOEXCEPT
 		{
 			if (number <= Capacity<T>())
 			{
@@ -379,7 +374,7 @@ namespace flf::internal
 				return;
 			}
 			
-			const auto previousSize = ByteSize();
+			const auto byteSize = ByteSize();
 			auto nextCapacity = NextSize(number) * sizeof(T);
 			if (nextCapacity < MIN_OBJECT_COUNT * sizeof(T))
 			{
@@ -388,13 +383,16 @@ namespace flf::internal
 			
 			auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextCapacity));
 			
+			
 			// construct the individual elements
 			if constexpr (std::is_trivially_move_constructible_v<T>)
 			{
-				std::memcpy(next, _begin, previousSize);
+				// optimization: we can just copy the whole memory block over
+				std::memcpy(next, _begin, byteSize);
 			} else
 			{
-				for (T *target = std::launder(reinterpret_cast<T *>(next)), *targetEnd = target + (previousSize / sizeof(T)),
+				for (T *target = reinterpret_cast<T *>(next),
+						     *const targetEnd = target + (byteSize / sizeof(T)),
 						     *source = std::launder(reinterpret_cast<T *>(_begin));
 				     target < targetEnd; ++target, ++source)
 				{
@@ -410,8 +408,19 @@ namespace flf::internal
 				}
 			}
 			
+			if constexpr(not std::is_trivially_destructible_v<T>)
+			{
+				for (T *source = std::launder(reinterpret_cast<T *>(_begin)), *const sourceEnd = reinterpret_cast<T *>(_sizeEnd);
+				     source < sourceEnd; ++source)
+				{
+					std::destroy_at(source);
+				}
+			}
+			
+			_resource->deallocate(_begin, byteSize);
+			
 			_begin = next;
-			_sizeEnd = _begin + previousSize;
+			_sizeEnd = _begin + byteSize;
 			_capacityEnd = _begin + nextCapacity;
 		}
 		
@@ -419,7 +428,7 @@ namespace flf::internal
 		/// \tparam T Type to use for resizing. Its default constructor will be called for new elements
 		/// \param size Number of elements to contain in vector
 		template<typename T>
-		void Resize(std::size_t size) FLUFF_NOEXCEPT
+		void Resize(std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
 			const auto previousSize = Size<T>();
 			if (previousSize == size) FLUFF_UNLIKELY
@@ -462,7 +471,7 @@ namespace flf::internal
 		/// \tparam T Type to use for resizing. Its default constructor will be called for new elements
 		/// \param size Number of elements to contain in vector
 		template<typename T>
-		void ResizeUnsafe(std::size_t size) FLUFF_NOEXCEPT
+		void ResizeUnsafe(std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
 			auto previousSize = Size<T>();
 			if (previousSize == size) FLUFF_UNLIKELY
@@ -480,4 +489,5 @@ namespace flf::internal
 			}
 		}
 	};
+	static_assert(sizeof(DynamicVector) == sizeof(ByteVector));
 }

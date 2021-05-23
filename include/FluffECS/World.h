@@ -38,7 +38,7 @@ namespace flf
 		static constexpr std::pmr::pool_options STANDARD_POOL_OPTIONS = {8, COMPONENT_VECTOR_BYTE_SIZE};
 	
 	public:
-		~BasicWorld() FLUFF_NOEXCEPT
+		~BasicWorld() FLUFF_MAYBE_NOEXCEPT
 		{
 			for (std::pair<const MultiIdType, ComponentContainer *> container : _componentContainers)
 			{
@@ -52,7 +52,7 @@ namespace flf
 		/// \tparam TComponents Entity need to have at minimum to be iterated over
 		/// \param function to apply on them
 		template<typename ...TComponents, typename TFunc>
-		void Foreach(TFunc &&function) noexcept(std::is_nothrow_invocable_v<TFunc>)
+		void Foreach(TFunc &&function) FLUFF_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
 			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
 			              "Types cannot be reference or pointer");
@@ -73,7 +73,7 @@ namespace flf
 		/// \tparam TComponents Entity need to have at minimum to be iterated over
 		/// \param function to apply on them
 		template<typename ...TComponents, typename TFunc>
-		void Foreach(TFunc &&function) const noexcept(std::is_nothrow_invocable_v<TFunc>)
+		void Foreach(TFunc &&function) const FLUFF_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
 			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
 			              "Types cannot be reference or pointer");
@@ -95,7 +95,7 @@ namespace flf
 		/// \param function to apply on them. Must be in the form identifier(flf::EntityId, TComponents...)
 		/// where the first argument is the id of the entity currently iterated
 		template<typename ...TComponents, typename TFunc>
-		void ForeachEntity(TFunc &&function) noexcept(std::is_nothrow_invocable_v<TFunc>)
+		void ForeachEntity(TFunc &&function) FLUFF_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
 			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
 			              "Types cannot be reference or pointer");
@@ -118,7 +118,7 @@ namespace flf
 		/// \param function to apply on them. Must be in the form identifier(flf::EntityId, TComponents...)
 		/// where the first argument is the id of the entity currently iterated
 		template<typename ...TComponents, typename TFunc>
-		void ForeachEntity(TFunc &&function) const noexcept(std::is_nothrow_invocable_v<TFunc>)
+		void ForeachEntity(TFunc &&function) const FLUFF_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
 			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
 			              "Types cannot be reference or pointer");
@@ -140,7 +140,7 @@ namespace flf
 		/// \param entity that owns the wanted component
 		/// \return a reference to the component of the entity
 		template<typename TComponent>
-		inline TComponent &Get(Entity entity) FLUFF_NOEXCEPT
+		inline TComponent &Get(Entity entity) FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
@@ -153,7 +153,7 @@ namespace flf
 		/// \param entity that owns the wanted component
 		/// \return a reference to the component of the entity
 		template<typename TComponent>
-		inline TComponent &Get(const Entity entity) const FLUFF_NOEXCEPT
+		inline TComponent &Get(const Entity entity) const FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
@@ -165,7 +165,7 @@ namespace flf
 		/// \tparam TComponents the entity should contain
 		/// \return a new entity
 		template<typename ...TComponents>
-		inline Entity CreateEntity() FLUFF_NOEXCEPT
+		inline Entity CreateEntity() FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
 			static_assert((CanBeComponent<TComponents>() && ...));
@@ -177,7 +177,7 @@ namespace flf
 		/// \tparam TComponents the entity should contain
 		/// \return a new entity
 		template<typename ...TComponents>
-		inline Entity CreateEntity(TComponents &&...args) FLUFF_NOEXCEPT
+		inline Entity CreateEntity(TComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
 			static_assert((CanBeComponent<TComponents>() && ...));
@@ -189,7 +189,7 @@ namespace flf
 		/// \tparam TComponents the entities should contain
 		/// \param numEntities to create
 		template<typename ...TComponents>
-		inline auto CreateMultiple(EntityId numEntities) FLUFF_NOEXCEPT
+		inline auto CreateMultiple(EntityId numEntities) FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
 			static_assert((CanBeComponent<TComponents>() && ...));
@@ -203,19 +203,19 @@ namespace flf
 		/// \param numEntities to create
 		/// \param args components these entities shall have a copy of
 		template<typename ...TComponents>
-		inline auto CreateMultiple(EntityId numEntities, TComponents &&...args) FLUFF_NOEXCEPT
+		inline auto CreateMultiple(EntityId numEntities, TComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert((CanBeComponent<TComponents>() && ...));
 			
 			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
-			return CreateMultipleImpl(internal::Sort(internal::TypeList<TComponents...>()), numEntities,
+			return CreateMultipleWith(internal::Sort(internal::TypeList<TComponents...>()), numEntities,
 			                          std::forward<TComponents>(args)...);
 		}
 		
 		/// Creates multiple clones from a given entity prototype
 		/// \tparam TComponents the cloned entities should contain. May be less than the prototype
 		template<typename ...TComponents>
-		inline auto CreateMultipleFrom(EntityId numEntities, Entity prototype) FLUFF_NOEXCEPT
+		inline auto CreateMultipleFrom(EntityId numEntities, Entity prototype) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(Contains(prototype.Id()) && "Entity does not belong to a ComponentContainer");
 			
@@ -228,7 +228,7 @@ namespace flf
 		/// \tparam TComponents types to add
 		/// \param entity to add the component to
 		template<typename ...TComponents>
-		void AddComponent(Entity entity) FLUFF_NOEXCEPT
+		void AddComponent(Entity entity) FLUFF_MAYBE_NOEXCEPT
 		{
 			ComponentContainer &destination = AddComponentMoveImpl<TComponents...>(entity);
 			(destination.GetVector<TComponents>().template PushBack<TComponents>(), ...);
@@ -239,14 +239,14 @@ namespace flf
 		/// \param entity to add the component to
 		/// \param comps components to add
 		template<typename ...TComponents>
-		void AddComponent(Entity entity, TComponents &&...comps) FLUFF_NOEXCEPT
+		void AddComponent(Entity entity, TComponents &&...comps) FLUFF_MAYBE_NOEXCEPT
 		{
 			ComponentContainer &destination = AddComponentMoveImpl<TComponents...>(entity);
 			(destination.GetVector<TComponents>().template EmplaceBack<TComponents>(std::forward<TComponents>(comps)), ...);
 		}
 		
 		template<typename TComponentToRemove>
-		void RemoveComponent(Entity entity) FLUFF_NOEXCEPT
+		void RemoveComponent(Entity entity) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
 			ComponentContainer &source = ContainerOf(entity.Id());
@@ -298,7 +298,7 @@ namespace flf
 		/// \tparam TComponents that collected entities need to contain at minimum
 		/// \return a list of iterators that go through all containers containing the given components
 		template<typename ...TComponents>
-		MultiContainerRange<TComponents...> EntitiesWith() FLUFF_NOEXCEPT
+		MultiContainerRange<TComponents...> EntitiesWith() FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
 			              "Types cannot be reference or pointer");
@@ -310,7 +310,7 @@ namespace flf
 		/// \tparam TComponents that collected entities need to contain at minimum
 		/// \return a list of iterators that go through all containers containing the given components
 		template<typename ...TComponents>
-		MultiContainerRange<const TComponents...> EntitiesWith() const FLUFF_NOEXCEPT
+		MultiContainerRange<const TComponents...> EntitiesWith() const FLUFF_MAYBE_NOEXCEPT
 		{
 			static_assert(not((std::is_reference_v<TComponents> || std::is_pointer_v<TComponents>) || ...),
 			              "Types cannot be reference or pointer");
@@ -325,7 +325,7 @@ namespace flf
 		/// \tparam TComponent type to check
 		/// \return whether this is usable as a component type
 		template<typename TComponent>
-		static constexpr bool CanBeComponent() noexcept
+		static constexpr bool CanBeComponent() FLUFF_NOEXCEPT
 		{
 			return std::is_default_constructible_v<TComponent> &&
 			       (std::is_copy_constructible_v<TComponent> && std::is_move_constructible_v<TComponent>);
@@ -334,7 +334,7 @@ namespace flf
 	private:
 		template<typename TAllocator1, typename TAllocator2>
 		ComponentContainer &CreateComponentContainerWith(const std::vector<TypeInformation, TAllocator1> &infos,
-		                                                 const std::vector<internal::ConstructorVTable, TAllocator2> &constructors) FLUFF_NOEXCEPT
+		                                                 const std::vector<internal::ConstructorVTable, TAllocator2> &constructors) FLUFF_MAYBE_NOEXCEPT
 		{
 			auto *createdContainer = (ComponentContainer *)
 					_containerResource.allocate(sizeof(ComponentContainer), alignof(ComponentContainer));
@@ -356,7 +356,7 @@ namespace flf
 		/// \tparam TComponents the types that the ComponentVectors need to contain at least to be relevant
 		/// \return a list of tuples of vectors containing the given components
 		template<typename ...TComponents>
-		std::vector<ComponentContainer *> CollectVectorsOf() noexcept
+		std::vector<ComponentContainer *> CollectVectorsOf() FLUFF_NOEXCEPT
 		{
 			return CollectVectorsOfImpl(internal::Sort(internal::TypeList<std::remove_const_t<std::remove_reference_t<TComponents>>...>()));
 		}
@@ -365,7 +365,7 @@ namespace flf
 		/// \tparam TComponents the types that the ComponentVectors need to contain at least to be relevant
 		/// \return a list of tuples of vectors containing the given components
 		template<typename ...TComponents>
-		std::vector<const ComponentContainer *> CollectVectorsOf() const noexcept
+		std::vector<const ComponentContainer *> CollectVectorsOf() const FLUFF_NOEXCEPT
 		{
 			return CollectVectorsOfImpl(internal::Sort(internal::TypeList<std::remove_const_t<std::remove_reference_t<TComponents>>...>()));
 		}
@@ -373,7 +373,7 @@ namespace flf
 		/// Collects all vectors containing at minimum the given components
 		/// \return a list of pointers to those containers
 		template<typename ...TComponents>
-		std::vector<ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) noexcept
+		std::vector<ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) FLUFF_NOEXCEPT
 		{
 			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents>() ...});
 		}
@@ -381,27 +381,27 @@ namespace flf
 		/// Collects all vectors containing at minimum the given components
 		/// \return a list of const pointers to those containers
 		template<typename ...TComponents>
-		std::vector<const ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) const noexcept
+		std::vector<const ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) const FLUFF_NOEXCEPT
 		{
 			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents>() ...});
 		}
 		
 		template<typename ...TComponents>
-		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>) FLUFF_NOEXCEPT
+		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>) FLUFF_MAYBE_NOEXCEPT
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
 			return Entity(vec.PushBack<TComponents...>(), *this);
 		}
 		
 		template<typename ...TComponents, typename ...TAddedComponents>
-		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>, TAddedComponents &&...args) FLUFF_NOEXCEPT
+		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>, TAddedComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
 			return Entity(vec.EmplaceBack(std::forward<TAddedComponents>(args)...), *this);
 		}
 		
 		template<typename ...TComponents>
-		inline Iterator<TComponents...> CreateMultipleImpl(internal::TypeList<TComponents...>, EntityId numEntities) FLUFF_NOEXCEPT
+		inline Iterator<TComponents...> CreateMultipleImpl(internal::TypeList<TComponents...>, EntityId numEntities) FLUFF_MAYBE_NOEXCEPT
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
 			return vec.CreateMultiple<TComponents...>(numEntities);
@@ -502,7 +502,7 @@ namespace flf
 		/// \param individualIds of the types in the container
 		template<typename TAllocator>
 		void RegisterVector(ComponentContainer *container, MultiIdType multiId,
-		                    const std::vector<IdType, TAllocator> &individualIds) FLUFF_NOEXCEPT
+		                    const std::vector<IdType, TAllocator> &individualIds) FLUFF_MAYBE_NOEXCEPT
 		{
 			container->world = static_cast<internal::WorldInternal *>(this);
 			_componentContainers.insert({multiId, container});
@@ -513,7 +513,7 @@ namespace flf
 		/// Looks up the memory resource for a given type, or, if none is found, creates a new one
 		/// \param id TypeId of the type of the resource
 		/// \return a reference to that memory resource
-		TMemResource &GetMemoryResource(IdType id) FLUFF_NOEXCEPT
+		TMemResource &GetMemoryResource(IdType id) FLUFF_MAYBE_NOEXCEPT
 		{
 			if (_resources.count(id) != 0)
 			{
@@ -546,7 +546,7 @@ namespace flf
 	using World = BasicWorld<std::pmr::unsynchronized_pool_resource>;
 	
 	template<typename TComponent>
-	TComponent *Entity::Get() noexcept
+	TComponent *Entity::Get() FLUFF_NOEXCEPT
 	{
 		if (not _world) FLUFF_UNLIKELY
 		{
@@ -564,7 +564,7 @@ namespace flf
 	}
 	
 	template<typename TComponent>
-	const TComponent *Entity::Get() const noexcept
+	const TComponent *Entity::Get() const FLUFF_NOEXCEPT
 	{
 		if (not _world) FLUFF_UNLIKELY
 		{
@@ -581,7 +581,7 @@ namespace flf
 		}
 	}
 	
-	void Entity::Destroy() FLUFF_NOEXCEPT
+	void Entity::Destroy() FLUFF_MAYBE_NOEXCEPT
 	{
 		ComponentContainer &cont = _world->ContainerOf(Id());
 		cont.Remove(Id());
@@ -589,7 +589,7 @@ namespace flf
 	}
 	
 	template<typename TComponent>
-	bool Entity::Has() const noexcept
+	bool Entity::Has() const FLUFF_NOEXCEPT
 	{
 		if (not _world) FLUFF_UNLIKELY
 		{
@@ -600,7 +600,7 @@ namespace flf
 		return cont.ContainsType(TypeId<TComponent>()) && cont.ContainsId(Id());
 	}
 	
-	bool Entity::IsDead() const noexcept
+	bool Entity::IsDead() const FLUFF_NOEXCEPT
 	{
 		if (not _world) FLUFF_UNLIKELY
 		{

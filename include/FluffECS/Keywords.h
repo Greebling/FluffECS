@@ -2,6 +2,8 @@
 
 #define FLUFF_NOEXCEPT noexcept
 
+#define FLUFF_MAYBE_NOEXCEPT noexcept
+
 #if __cplusplus > 201703L
 /// C++20 features
 #define FLUFF_LIKELY [[likely]]

@@ -16,17 +16,17 @@ namespace flf::internal
 	class WorldInternal
 	{
 	public:
-		[[nodiscard]] bool Contains(EntityId id) const noexcept
+		[[nodiscard]] bool Contains(EntityId id) const FLUFF_NOEXCEPT
 		{
 			return _entityToContainer.Contains(id);
 		}
 		
-		[[nodiscard]] ComponentContainer &ContainerOf(EntityId id) noexcept
+		[[nodiscard]] ComponentContainer &ContainerOf(EntityId id) FLUFF_NOEXCEPT
 		{
 			return *_entityToContainer[id];
 		}
 		
-		[[nodiscard]] const ComponentContainer &ContainerOf(EntityId id) const noexcept
+		[[nodiscard]] const ComponentContainer &ContainerOf(EntityId id) const FLUFF_NOEXCEPT
 		{
 			return *_entityToContainer[id];
 		}
@@ -46,7 +46,7 @@ namespace flf::internal
 		/// Creates a new unique id for an entity
 		/// \param owner of that new entity
 		/// \return the a free unique id for an entity in this world
-		inline EntityId TakeNextFreeIndex(ComponentContainer &owner) FLUFF_NOEXCEPT
+		inline EntityId TakeNextFreeIndex(ComponentContainer &owner) FLUFF_MAYBE_NOEXCEPT
 		{
 			auto index = _nextFreeIndex;
 			// TODO: This is a performance bottleneck. Can we make this more efficient than taking much of the time of creating many entities?
@@ -56,7 +56,7 @@ namespace flf::internal
 			return index;
 		}
 		
-		inline void AssociateIdWith(EntityId id, ComponentContainer &container) noexcept
+		inline void AssociateIdWith(EntityId id, ComponentContainer &container) FLUFF_NOEXCEPT
 		{
 			_entityToContainer.SetEntry(id, &container);
 		}
