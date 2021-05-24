@@ -38,7 +38,10 @@ namespace flf::internal
 			static_assert(std::is_default_constructible_v<T> && std::is_move_constructible_v<T> &&
 			              std::is_copy_constructible_v<T> && std::is_destructible_v<T>);
 			
-			return {&DefaultConstructAt<T>, &MoveConstructAt<T>, &CopyConstructAt<T>, &DestructAt<T>};
+			return {std::is_default_constructible_v<T> ? &DefaultConstructAt<T> : nullptr,
+			        std::is_move_constructible_v<T> ? &MoveConstructAt<T> : nullptr,
+			        std::is_copy_constructible_v<T> ? &CopyConstructAt<T> : nullptr,
+			        std::is_destructible_v<T> ? &DestructAt<T> : nullptr};
 		}
 		
 		void (*defaultConstruct)(void *at);
