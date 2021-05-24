@@ -89,6 +89,7 @@ namespace flf::internal
 		{
 			GrowSingle(size);
 			
+			std::memset(_sizeEnd, 0, size);
 			_sizeEnd += size;
 		}
 		
@@ -97,56 +98,64 @@ namespace flf::internal
 		void PushBackBytesUnsafe(std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
 			GrowSingle(size);
-			//std::memset(_sizeEnd, 0, size); TODO: Is this needed?
+			
 			_sizeEnd += size;
 		}
 		
 		// TODO: Check for bugs
 		void PushBackUsing(const std::size_t elementSize, const ConstructorVTable constructors) FLUFF_MAYBE_NOEXCEPT
 		{
-			const auto previousSize = ByteSize();
-			const auto nextByteCapacity = NextSize((previousSize / elementSize)) * elementSize;
-			
-			auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextByteCapacity));
-			
-			assert(constructors.destruct != nullptr);
-			
-			if (constructors.moveConstruct != nullptr)
+			if (_sizeEnd + elementSize > _capacityEnd)
 			{
-				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
-				     begin < end; begin += elementSize, target += elementSize)
+				// TODO: refactor to its own function
+				const auto previousSize = ByteSize();
+				const auto nextByteCapacity = NextSize((previousSize / elementSize)) * elementSize;
+				
+				auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextByteCapacity));
+				
+				assert(constructors.destruct != nullptr);
+				
+				if (constructors.moveConstruct != nullptr)
 				{
-					constructors.moveConstruct(begin, target);
-					constructors.destruct(begin);
-				}
-			} else if (constructors.copyConstruct != nullptr)
-			{
-				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
-				     begin < end; begin += elementSize, target += elementSize)
+					for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
+					     begin < end; begin += elementSize, target += elementSize)
+					{
+						constructors.moveConstruct(begin, target);
+						constructors.destruct(begin);
+					}
+				} else if (constructors.copyConstruct != nullptr)
 				{
-					constructors.copyConstruct(begin, target);
-					constructors.destruct(begin);
+					for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
+					     begin < end; begin += elementSize, target += elementSize)
+					{
+						constructors.copyConstruct(begin, target);
+						constructors.destruct(begin);
+					}
+				} else
+				{
+					assert(false && "Type has neither move nor copy constructor");
+					// TODO: throw an exception
 				}
-			} else
-			{
-				assert(false && "Type has neither move nor copy constructor");
-				// TODO: throw an exception
+				
+				// create new elements
+				if (constructors.defaultConstruct != nullptr)
+				{
+					for (std::byte *newElement = next + previousSize, *const newEnd = next + previousSize + 1;
+					     newElement < newEnd; newElement += elementSize)
+					{
+						constructors.defaultConstruct(newElement);
+					}
+				}
+				
+				_resource->deallocate(_begin, previousSize);
+				_begin = next;
+				_sizeEnd = next + previousSize + 1;
+				_capacityEnd = next + nextByteCapacity;
 			}
 			
-			// create new elements
-			if (constructors.defaultConstruct != nullptr)
-			{
-				for (std::byte *newElement = next + previousSize, *const newEnd = next + previousSize + 1;
-				     newElement < newEnd; newElement += elementSize)
-				{
-					constructors.defaultConstruct(newElement);
-				}
-			}
-			
-			_resource->deallocate(_begin, previousSize);
-			_begin = next;
-			_sizeEnd = next + previousSize + 1;
-			_capacityEnd = next + nextByteCapacity;
+			// push back element
+			constructors.defaultConstruct(_sizeEnd);
+			_sizeEnd += elementSize;
 		}
 		
 		/// Reduces the size of the vector by size bytes
