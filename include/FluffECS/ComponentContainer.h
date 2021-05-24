@@ -554,7 +554,8 @@ namespace flf
 				
 				if (targetVector)
 				{
-					targetVector->PushBackBytesUnsafe(tInfo.size); // TODO: IMPORTANT! Use move constructor for old objects
+					targetVector->PushBackUsing(tInfo.size, _constructors[i]);
+					
 					// copy data to target
 					if (ownByteData)
 					{
