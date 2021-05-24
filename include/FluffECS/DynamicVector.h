@@ -50,7 +50,7 @@ namespace flf::internal
 			_resource = &resource;
 		}
 		
-		/// \return the size of contained elements in bytes
+		/// \return the size of vector in bytes
 		[[nodiscard]] inline std::size_t ByteSize() const FLUFF_NOEXCEPT
 		{
 			return _sizeEnd - _begin;
@@ -101,6 +101,54 @@ namespace flf::internal
 			_sizeEnd += size;
 		}
 		
+		// TODO: Check for bugs
+		void PushBackUsing(const std::size_t elementSize, const ConstructorVTable constructors) FLUFF_MAYBE_NOEXCEPT
+		{
+			const auto previousSize = ByteSize();
+			const auto nextByteCapacity = NextSize((previousSize / elementSize)) * elementSize;
+			
+			auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextByteCapacity));
+			
+			assert(constructors.destruct != nullptr);
+			
+			if (constructors.moveConstruct != nullptr)
+			{
+				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
+				     begin < end; begin += elementSize, target += elementSize)
+				{
+					constructors.moveConstruct(begin, target);
+					constructors.destruct(begin);
+				}
+			} else if (constructors.copyConstruct != nullptr)
+			{
+				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
+				     begin < end; begin += elementSize, target += elementSize)
+				{
+					constructors.copyConstruct(begin, target);
+					constructors.destruct(begin);
+				}
+			} else
+			{
+				assert(false && "Type has neither move nor copy constructor");
+				// TODO: throw an exception
+			}
+			
+			// create new elements
+			if (constructors.defaultConstruct != nullptr)
+			{
+				for (std::byte *newElement = next + previousSize, *const newEnd = next + previousSize + 1;
+				     newElement < newEnd; newElement += elementSize)
+				{
+					constructors.defaultConstruct(newElement);
+				}
+			}
+			
+			_resource->deallocate(_begin, previousSize);
+			_begin = next;
+			_sizeEnd = next + previousSize + 1;
+			_capacityEnd = next + nextByteCapacity;
+		}
+		
 		/// Reduces the size of the vector by size bytes
 		/// \param size
 		void PopBackBytes(std::size_t size) FLUFF_NOEXCEPT
@@ -119,9 +167,9 @@ namespace flf::internal
 		/// \param byteSize of the components saved here
 		inline void GrowSingle(std::size_t byteSize) FLUFF_MAYBE_NOEXCEPT
 		{
-			// grows quadratically in comparison to number of components that can be stored (not in number of pure bytes)
+			// grows quadratically in comparison to number of components that can be stored (not in number of pure bytes!)
 			const auto previousSize = ByteSize();
-			const auto nextByteCapacity = NextSize(previousSize / byteSize) * (previousSize + byteSize);
+			const auto nextByteCapacity = NextSize(previousSize / byteSize) * byteSize;
 			ReserveBytes(nextByteCapacity);
 		}
 		
@@ -489,5 +537,6 @@ namespace flf::internal
 			}
 		}
 	};
+	
 	static_assert(sizeof(DynamicVector) == sizeof(ByteVector));
 }
