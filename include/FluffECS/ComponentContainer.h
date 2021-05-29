@@ -123,7 +123,6 @@ namespace flf
 		
 		/// Creates a multiple entities with the given components
 		/// \tparam TComponents of the entity
-		/// \return An Iterator starting at the first created entity, going until the containers end
 		template<typename ...TComponents>
 		void CreateMultiple(const EntityId number) FLUFF_MAYBE_NOEXCEPT
 		{
@@ -141,7 +140,6 @@ namespace flf
 		/// \tparam TComponents of the container
 		/// \param amount of clones to create
 		/// \param id of the entity to clone
-		/// \return An Iterator starting at the first created entity, going until the containers end
 		template<typename ...TComponents>
 		inline void Clone(const IndexType amount, const EntityId id) FLUFF_MAYBE_NOEXCEPT
 		{
@@ -153,14 +151,13 @@ namespace flf
 			const auto index = IndexOf(id);
 			
 			RegisterMultiple(beginSize, endSize);
-			Clone < TComponents...>(amount, Get<TComponents>(index)...);
+			Clone<TComponents...>(amount, Get<TComponents>(index)...);
 		}
 		
 		/// Creates a multiple entities with the given components
 		/// \tparam TComponents of the container
 		/// \param amount of clones to create
 		/// \param components to clone from
-		/// \return An Iterator starting at the first created entity, going until the containers end
 		template<typename ...TComponents>
 		inline void Clone(const IndexType amount, const TComponents &...components) FLUFF_MAYBE_NOEXCEPT
 		{
@@ -217,6 +214,9 @@ namespace flf
 			}
 		}
 		
+		/// Reserves the given amount of components
+		/// \tparam TComponents to reserve
+		/// \param n amount of entries to reserve
 		template<typename ...TComponents>
 		void Reserve(IndexType n)
 		{
@@ -229,11 +229,13 @@ namespace flf
 			return _componentIds;
 		}
 		
+		/// \return the number of entities contained
 		[[nodiscard]] inline IndexType Size() const FLUFF_NOEXCEPT
 		{
 			return _componentIds.size();
 		}
 		
+		/// \return the capacity of the underlying vectors
 		[[nodiscard]] inline IndexType Capacity() const FLUFF_NOEXCEPT
 		{
 			if (_componentVectors.empty())
@@ -246,21 +248,14 @@ namespace flf
 		}
 	
 	public:
+		/// \return the MultiIdType of the sum of all contained components
 		[[nodiscard]] inline MultiIdType GetMultiTypeId() const FLUFF_NOEXCEPT
 		{
-			MultiIdType result = 0;
-			auto begin = _typeInfos.cbegin();
-			for (; begin < _typeInfos.cend(); ++begin)
+			MultiIdType result = MultiTypeId<>();
+			for (auto tInfo : _typeInfos)
 			{
-				result = result xor (begin->id + 0x9e3779b9);
+				result = result xor tInfo.id;
 			}
-			
-			begin = _typeInfos.cbegin();
-			for (; begin < _typeInfos.cend(); ++begin)
-			{
-				result += begin->id;
-			}
-			
 			return result;
 		}
 	
@@ -494,6 +489,8 @@ namespace flf
 		internal::WorldInternal *world{};
 	
 	public:
+		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \return a tuple of pointers to the begin of all given components
 		template<typename ...TComponents>
 		std::tuple<TComponents *...> RawBegin() FLUFF_NOEXCEPT
 		{
@@ -522,6 +519,8 @@ namespace flf
 			return PointerArrayToTuple<TComponents...>(pointers, std::make_index_sequence<sizeof...(TComponents)>());
 		}
 		
+		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \return a tuple of pointers to the end to of all given components
 		template<typename ...TComponents>
 		std::tuple<TComponents *...> RawEnd() FLUFF_NOEXCEPT
 		{
@@ -554,6 +553,8 @@ namespace flf
 			return PointerArrayToTuple<TComponents...>(pointers, std::make_index_sequence<sizeof...(TComponents)>());
 		}
 		
+		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \return a tuple of pointers to the begin to of all given components and to the EntityIds
 		template<typename ...TComponents>
 		std::tuple<TComponents *..., EntityId *> RawBeginWithEntity() FLUFF_NOEXCEPT
 		{
@@ -583,6 +584,8 @@ namespace flf
 			                      std::make_tuple(_componentIds.data()));
 		}
 		
+		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \return a tuple of pointers to the end to of all given components and to the EntityIds
 		template<typename ...TComponents>
 		std::tuple<TComponents *..., EntityId *> RawEndWithEntity() FLUFF_NOEXCEPT
 		{
@@ -613,10 +616,17 @@ namespace flf
 		}
 	
 	private:
+		/// Casts a collection of void pointers to typed pointers of a given type
+		/// \tparam TComponents types
+		/// \tparam Is (deduced from make_index_sequence)
+		/// \param pointers to cast
+		/// \param seq generated from std::make_index_sequence<sizeof...(TComponents)>()
+		/// \return a tuple of correctly typed pointers
 		template<typename ...TComponents, std::size_t ...Is>
 		static constexpr std::tuple<TComponents *...>
-		PointerArrayToTuple(std::array<void *, sizeof...(TComponents)> pointers, std::integer_sequence<std::size_t, Is...>) FLUFF_NOEXCEPT
+		PointerArrayToTuple(std::array<void *, sizeof...(TComponents)> pointers, std::integer_sequence<std::size_t, Is...> seq) FLUFF_NOEXCEPT
 		{
+			static_assert(sizeof...(TComponents) == sizeof...(Is));
 			return {reinterpret_cast<TComponents *>(pointers[Is])...};
 		}
 	
