@@ -648,10 +648,6 @@ namespace flf
 		
 		/// Contains vectors of the components
 		VectorOf<internal::DynamicVector> _componentVectors{_ownResource};
-		
-		template<typename ...TComponents>
-		friend
-		class IterableContainerAdapter;
 	};
 	
 	
