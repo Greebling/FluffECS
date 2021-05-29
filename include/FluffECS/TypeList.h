@@ -98,3 +98,21 @@ namespace flf::internal
 		}
 	}
 }
+
+namespace flf
+{
+	template<typename ...Ts>
+	constexpr std::array<IdType, sizeof ...(Ts)> SortedTypeIdList()
+	{
+		return SortedTypeIdListImpl(internal::Sort(internal::TypeList<Ts...>()));
+	}
+	
+	namespace internal
+	{
+		template<typename ...Ts>
+		constexpr std::array<IdType, sizeof ...(Ts)> SortedTypeIdListImpl(TypeList<Ts...>)
+		{
+			return {TypeId<Ts>()...};
+		}
+	}
+}

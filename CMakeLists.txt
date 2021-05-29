@@ -6,6 +6,8 @@ project(FluffECS
 
 add_library(FluffECS INTERFACE)
 
+target_compile_options(FluffECS INTERFACE -Wall)
+
 target_sources(FluffECS
         INTERFACE
         include/FluffECS/Keywords.h
@@ -19,7 +21,5 @@ target_sources(FluffECS
         include/FluffECS/WorldInternal.h
         include/FluffECS/ComponentContainer.h
         include/FluffECS/World.h
-        include/FluffECS/IterableContainerAdapter.h
-        include/FluffECS/IteratorContainer.h
         include/FluffECS/Serialization.h
         )

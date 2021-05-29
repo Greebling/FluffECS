@@ -72,6 +72,16 @@ namespace flf::internal
 			return _begin;
 		}
 		
+		[[nodiscard]] void *End() FLUFF_NOEXCEPT
+		{
+			return _sizeEnd;
+		}
+		
+		[[nodiscard]] const void *End() const FLUFF_NOEXCEPT
+		{
+			return _sizeEnd;
+		}
+		
 		/// Similar to PushBack, just with using raw byte data
 		/// \param data to add to the vector
 		/// \param size of the data to add. Note that the size of the type already contained must be equal to size

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <type_traits>
 #include <string_view>
+#include <array>
 
 #if _MSC_VER && !__INTEL_COMPILER // yeah msvc getting the special treatment... (https://en.cppreference.com/w/cpp/language/operator_alternative)
 
@@ -133,6 +134,7 @@ namespace flf
 	
 	namespace internal
 	{
+		
 		template<typename TIterator1, typename TIterator2>
 		static MultiIdType CombineIds(TIterator1 begin1, TIterator1 end1, TIterator2 begin2, TIterator2 end2)
 		{
