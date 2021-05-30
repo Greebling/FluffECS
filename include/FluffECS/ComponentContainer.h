@@ -497,7 +497,7 @@ namespace flf
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<TComponents...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -516,7 +516,8 @@ namespace flf
 					}
 				}
 			}
-			return PointerArrayToTuple<TComponents...>(pointers, std::make_index_sequence<sizeof...(TComponents)>());
+			return PointerArrayToTuple<std::remove_reference_t<TComponents>...>(pointers,
+			                                                                    std::make_index_sequence<sizeof...(TComponents)>());
 		}
 		
 		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
@@ -529,7 +530,7 @@ namespace flf
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<TComponents...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -550,7 +551,8 @@ namespace flf
 				}
 			}
 			
-			return PointerArrayToTuple<TComponents...>(pointers, std::make_index_sequence<sizeof...(TComponents)>());
+			return PointerArrayToTuple<std::remove_reference_t<TComponents>...>(pointers,
+			                                                                    std::make_index_sequence<sizeof...(TComponents)>());
 		}
 		
 		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
@@ -561,7 +563,7 @@ namespace flf
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<TComponents...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -580,8 +582,10 @@ namespace flf
 					}
 				}
 			}
-			return std::tuple_cat(PointerArrayToTuple<TComponents...>(pointers, std::make_index_sequence<sizeof...(TComponents)>()),
-			                      std::make_tuple(_componentIds.data()));
+			
+			auto componentData = PointerArrayToTuple<std::remove_reference_t<TComponents>...>
+					(pointers, std::make_index_sequence<sizeof...(TComponents)>());
+			return std::tuple_cat(componentData, std::make_tuple(_componentIds.data()));
 		}
 		
 		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
@@ -592,7 +596,7 @@ namespace flf
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<TComponents...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -611,8 +615,10 @@ namespace flf
 					}
 				}
 			}
-			return std::tuple_cat(PointerArrayToTuple<TComponents...>(pointers, std::make_index_sequence<sizeof...(TComponents)>()),
-			                      std::make_tuple(_componentIds.data() + _componentIds.size()));
+			
+			auto componentData = PointerArrayToTuple<std::remove_reference_t<TComponents>...>
+					(pointers, std::make_index_sequence<sizeof...(TComponents)>());
+			return std::tuple_cat(componentData, std::make_tuple(_componentIds.data() + _componentIds.size()));
 		}
 	
 	private:
@@ -624,7 +630,8 @@ namespace flf
 		/// \return a tuple of correctly typed pointers
 		template<typename ...TComponents, std::size_t ...Is>
 		static constexpr std::tuple<TComponents *...>
-		PointerArrayToTuple(std::array<void *, sizeof...(TComponents)> pointers, std::integer_sequence<std::size_t, Is...> seq) FLUFF_NOEXCEPT
+		PointerArrayToTuple(std::array<void *, sizeof...(TComponents)> pointers,
+		                    std::integer_sequence<std::size_t, Is...> seq) FLUFF_NOEXCEPT
 		{
 			static_assert(sizeof...(TComponents) == sizeof...(Is));
 			return {reinterpret_cast<TComponents *>(pointers[Is])...};
