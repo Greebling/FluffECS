@@ -528,6 +528,11 @@ namespace flf
 	
 	void Entity::Destroy() FLUFF_MAYBE_NOEXCEPT
 	{
+		if (_world == nullptr)
+		{
+			return;
+		}
+		
 		ComponentContainer &cont = _world->ContainerOf(Id());
 		cont.Remove(Id());
 		_world = nullptr; // just to be safe
