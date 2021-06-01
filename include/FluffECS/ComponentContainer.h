@@ -198,7 +198,10 @@ namespace flf
 					void *dataToMove = currVector.GetBytes(bytePosition);
 					void *end = currVector.BackPtr() - tInfo.size;
 					
-					_constructors[i].moveConstruct(dataToMove, end);
+					if (dataToMove != end) FLUFF_LIKELY
+					{
+						_constructors[i].moveConstruct(dataToMove, end);
+					}
 					_constructors[i].destruct(dataToMove);
 				}
 			}
@@ -332,14 +335,15 @@ namespace flf
 				
 				if (targetVector)
 				{
-					targetVector->PushBackUsing(tInfo.size, _constructors[i]);
-					
 					// copy data to target
 					if (ownByteData)
 					{
 						void *dataToMove = ownByteData->GetBytes(bytePosition);
 						
-						_constructors[i].moveConstruct(targetVector->GetBytes(targetVector->ByteSize() - tInfo.size), dataToMove);
+						targetVector->EmplaceBackUsing(dataToMove, tInfo.size, _constructors[i]);
+					} else
+					{
+						targetVector->PushBackUsing(tInfo.size, _constructors[i]);
 					}
 				}
 			}
