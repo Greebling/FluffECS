@@ -117,55 +117,62 @@ namespace flf::internal
 		{
 			if (_sizeEnd + elementSize > _capacityEnd)
 			{
-				// TODO: refactor to its own function
-				const auto previousSize = ByteSize();
-				const auto nextByteCapacity = NextSize((previousSize / elementSize)) * elementSize;
-				
-				auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextByteCapacity));
-				
-				assert(constructors.destruct != nullptr);
-				
-				if (constructors.moveConstruct != nullptr)
-				{
-					for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
-					     begin < end; begin += elementSize, target += elementSize)
-					{
-						constructors.moveConstruct(begin, target);
-						constructors.destruct(begin);
-					}
-				} else if (constructors.copyConstruct != nullptr)
-				{
-					for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
-					     begin < end; begin += elementSize, target += elementSize)
-					{
-						constructors.copyConstruct(begin, target);
-						constructors.destruct(begin);
-					}
-				} else
-				{
-					assert(false && "Type has neither move nor copy constructor");
-					// TODO: throw an exception
-				}
-				
-				// create new elements
-				if (constructors.defaultConstruct != nullptr)
-				{
-					for (std::byte *newElement = next + previousSize, *const newEnd = next + previousSize + 1;
-					     newElement < newEnd; newElement += elementSize)
-					{
-						constructors.defaultConstruct(newElement);
-					}
-				}
-				
-				_resource->deallocate(_begin, previousSize);
-				_begin = next;
-				_sizeEnd = next + previousSize + 1;
-				_capacityEnd = next + nextByteCapacity;
+				ReserveUsing(elementSize, constructors);
 			}
 			
 			// push back element
 			constructors.defaultConstruct(_sizeEnd);
 			_sizeEnd += elementSize;
+		}
+		
+		void EmplaceBackUsing(void* data, const std::size_t elementSize, const ConstructorVTable constructors) FLUFF_MAYBE_NOEXCEPT
+		{
+			if (_sizeEnd + elementSize > _capacityEnd)
+			{
+				ReserveUsing(elementSize, constructors);
+			}
+			
+			// push back element
+			constructors.moveConstruct(_sizeEnd, data);
+			_sizeEnd += elementSize;
+		}
+		
+		void ReserveUsing(const size_t elementSize, const ConstructorVTable &constructors) FLUFF_MAYBE_NOEXCEPT
+		{
+			const auto previousSize = ByteSize();
+			const auto nextByteCapacity = NextSize((previousSize / elementSize)) * elementSize;
+			
+			auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextByteCapacity));
+			
+			assert(constructors.destruct != nullptr);
+			
+			if (constructors.moveConstruct != nullptr)
+			{
+				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
+				     begin < end; begin += elementSize, target += elementSize)
+				{
+					constructors.moveConstruct(begin, target);
+					constructors.destruct(begin);
+				}
+			} else if (constructors.copyConstruct != nullptr)
+			{
+				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
+				     begin < end; begin += elementSize, target += elementSize)
+				{
+					constructors.copyConstruct(begin, target);
+					constructors.destruct(begin);
+				}
+			} else
+			{
+				assert(false && "Type has neither move nor copy constructor");
+				// TODO: throw an exception
+			}
+			
+			
+			_resource->deallocate(_begin, previousSize);
+			_begin = next;
+			_sizeEnd = next + previousSize;
+			_capacityEnd = next + nextByteCapacity;
 		}
 		
 		/// Reduces the size of the vector by size bytes
