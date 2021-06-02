@@ -5,25 +5,49 @@ namespace flf::internal
 	template<typename T>
 	static void DefaultConstructAt(void *at)
 	{
-		new(at) T();
+		if constexpr(std::is_default_constructible_v<T>)
+		{
+			new(at) T();
+		} else
+		{
+			assert(false); // error
+		}
 	}
 	
 	template<typename T>
 	static void MoveConstructAt(void *at, void *from)
 	{
-		new(at) T(std::forward<T>(*reinterpret_cast<T *>(from)));
+		if constexpr(std::is_move_constructible_v<T>)
+		{
+			new(at) T(std::forward<T>(*reinterpret_cast<T *>(from)));
+		} else
+		{
+			assert(false); // error
+		}
 	}
 	
 	template<typename T>
 	static void CopyConstructAt(void *at, void *from)
 	{
-		new(at) T(*reinterpret_cast<T *>(from));
+		if constexpr(std::is_copy_constructible_v<T>)
+		{
+			new(at) T(*reinterpret_cast<T *>(from));
+		} else
+		{
+			assert(false); // error
+		}
 	}
 	
 	template<typename T>
 	static void DestructAt(void *at)
 	{
-		reinterpret_cast<T *>(at)->~T();
+		if constexpr(std::is_destructible_v<T>)
+		{
+			reinterpret_cast<T *>(at)->~T();
+		} else
+		{
+			assert(false); // error
+		}
 	}
 	
 	/// Collects all constructors and destructors of a type as function pointers
@@ -35,9 +59,6 @@ namespace flf::internal
 		template<typename T>
 		constexpr static ConstructorVTable Of()
 		{
-			static_assert(std::is_default_constructible_v<T> && std::is_move_constructible_v<T> &&
-			              std::is_copy_constructible_v<T> && std::is_destructible_v<T>);
-			
 			return {std::is_default_constructible_v<T> ? &DefaultConstructAt<T> : nullptr,
 			        std::is_move_constructible_v<T> ? &MoveConstructAt<T> : nullptr,
 			        std::is_copy_constructible_v<T> ? &CopyConstructAt<T> : nullptr,
