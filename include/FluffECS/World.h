@@ -50,7 +50,7 @@ namespace flf
 		template<typename ...TComponents, typename TFunc>
 		void Foreach(TFunc function) FLUFF_MAYBE_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
-			static_assert(((not std::is_pointer_v<TComponents>) && ...), "Component type may not be a pointer");
+			static_assert(((not std::is_pointer_v<TComponents>) && ...), "Type cannot be a pointer");
 			static_assert(std::is_invocable_v<TFunc, TComponents...>, "Function parameters do not match with given template parameters");
 			std::vector<ComponentContainer *> containers = CollectVectorsOf<std::remove_cvref_t<TComponents>...>();
 			
@@ -74,7 +74,7 @@ namespace flf
 		template<typename ...TComponents, typename TFunc>
 		void ForeachEntity(TFunc function) FLUFF_MAYBE_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
-			static_assert(((not std::is_pointer_v<TComponents>) && ...), "Component type may not be a pointer");
+			static_assert(((not std::is_pointer_v<TComponents>) && ...), "Type cannot be a pointer");
 			static_assert(std::is_invocable_v<TFunc, EntityId, TComponents...>,
 			              "Function parameters do not match with given template parameters or missing an flf::EntityId");
 			std::vector<ComponentContainer *> containers = CollectVectorsOf<std::remove_cvref_t<TComponents>...>();
@@ -101,7 +101,7 @@ namespace flf
 		template<typename TComponent>
 		inline TComponent &Get(Entity entity) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
+			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>), "Type cannot be reference or pointer");
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
 			
 			return ContainerOf(entity.Id()).template Get<TComponent>(entity.Id());
@@ -114,7 +114,7 @@ namespace flf
 		template<typename TComponent>
 		inline TComponent &Get(const Entity entity) const FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>));
+			static_assert((std::is_same_v<std::decay_t<TComponent>, TComponent>), "Type cannot be reference or pointer");
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
 			
 			return ContainerOf(entity.Id()).template Get<TComponent>(entity.Id());
@@ -126,8 +126,8 @@ namespace flf
 		template<typename ...TComponents>
 		inline Entity CreateEntity() FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
-			static_assert((CanBeComponent<TComponents>() && ...));
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
 			
 			return CreateEntityImpl(internal::Sort(internal::TypeList<TComponents...>()));
 		}
@@ -138,8 +138,8 @@ namespace flf
 		template<typename ...TComponents>
 		inline Entity CreateEntity(TComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
-			static_assert((CanBeComponent<TComponents>() && ...));
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
 			
 			return CreateEntityImpl(internal::Sort(internal::TypeList<TComponents...>()), std::forward<TComponents>(args)...);
 		}
@@ -150,8 +150,8 @@ namespace flf
 		template<typename ...TComponents>
 		inline void CreateMultiple(EntityId numEntities) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
-			static_assert((CanBeComponent<TComponents>() && ...));
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
 			
 			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
 			CreateMultipleImpl(internal::Sort(internal::TypeList<TComponents...>()), numEntities);
@@ -164,8 +164,8 @@ namespace flf
 		template<typename ...TComponents>
 		inline void CreateMultiple(EntityId numEntities, TComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
-			static_assert((CanBeComponent<TComponents>() && ...));
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
 			
 			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
 			CreateMultipleWith(internal::Sort(internal::TypeList<TComponents...>()), numEntities,
@@ -177,8 +177,8 @@ namespace flf
 		template<typename ...TComponents>
 		inline void CreateMultipleFrom(EntityId numEntities, Entity prototype) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
-			static_assert((CanBeComponent<TComponents>() && ...));
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
 			assert(Contains(prototype.Id()) && "Entity does not belong to a ComponentContainer");
 			
 			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
@@ -192,8 +192,8 @@ namespace flf
 		template<typename ...TComponents>
 		void AddComponent(Entity entity) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
-			static_assert((CanBeComponent<TComponents>() && ...));
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
 			
 			ComponentContainer &destination = AddComponentMoveImpl<TComponents...>(entity);
 			(destination.GetVector<TComponents>().template PushBack<TComponents>(), ...);
@@ -206,8 +206,8 @@ namespace flf
 		template<typename ...TComponents>
 		void AddComponent(Entity entity, TComponents &&...comps) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...));
-			static_assert((CanBeComponent<TComponents>() && ...));
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
 			
 			ComponentContainer &destination = AddComponentMoveImpl<TComponents...>(entity);
 			(destination.GetVector<TComponents>().template EmplaceBack<TComponents>(std::forward<TComponents>(comps)), ...);
@@ -216,8 +216,8 @@ namespace flf
 		template<typename TComponentToRemove>
 		void RemoveComponent(Entity entity) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert(std::is_same_v<std::decay_t<TComponentToRemove>, TComponentToRemove>);
-			static_assert((CanBeComponent<TComponentToRemove>()));
+			static_assert(std::is_same_v<std::decay_t<TComponentToRemove>, TComponentToRemove>, "Type cannot be reference or pointer");
+			AssertCanBeComponent<TComponentToRemove>();
 			
 			assert(Contains(entity.Id()) && "Entity does not belong to this World");
 			ComponentContainer &source = ContainerOf(entity.Id());
@@ -270,10 +270,11 @@ namespace flf
 		/// \tparam TComponent type to check
 		/// \return whether this is usable as a component type
 		template<typename TComponent>
-		static constexpr bool CanBeComponent() FLUFF_NOEXCEPT
+		static constexpr void AssertCanBeComponent() FLUFF_NOEXCEPT
 		{
-			return std::is_default_constructible_v<TComponent> &&
-			       (std::is_copy_constructible_v<TComponent> && std::is_move_constructible_v<TComponent>);
+			static_assert(std::is_default_constructible_v<TComponent>, "Type is missing a default constructor");
+			static_assert(std::is_copy_constructible_v<TComponent> || std::is_move_constructible_v<TComponent>,
+			              "Type needs to have at least either a copy or a move constructor");
 		}
 	
 	private:
@@ -367,7 +368,7 @@ namespace flf
 		ComponentContainer &AddComponentMoveImpl(Entity entity)
 		{
 			static_assert(sizeof...(TAddedComponents) != 0);
-			static_assert((CanBeComponent<TAddedComponents>() && ...));
+			(AssertCanBeComponent<TAddedComponents>(), ...);
 			
 			assert(Contains(entity.Id())); // Entity does not belong to this World
 			ComponentContainer &source = ContainerOf(entity.Id());
