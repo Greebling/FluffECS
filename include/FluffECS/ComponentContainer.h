@@ -200,7 +200,13 @@ namespace flf
 					
 					if (dataToMove != end) FLUFF_LIKELY
 					{
-						_constructors[i].moveConstruct(dataToMove, end);
+						if (_constructors[i].moveConstruct)
+						{
+							_constructors[i].moveConstruct(dataToMove, end);
+						} else
+						{
+							_constructors[i].copyConstruct(dataToMove, end);
+						}
 					}
 					_constructors[i].destruct(dataToMove);
 				}
@@ -327,6 +333,7 @@ namespace flf
 			for (std::size_t i = 0; i < _typeInfos.size(); ++i)
 			{
 				const TypeInformation tInfo = _typeInfos[i];
+				const internal::ConstructorVTable constructors = _constructors[i];
 				
 				internal::DynamicVector *targetVector = destination.GetVector(tInfo.id);
 				internal::DynamicVector *ownByteData = GetVector(tInfo.id);
@@ -340,10 +347,16 @@ namespace flf
 					{
 						void *dataToMove = ownByteData->GetBytes(bytePosition);
 						
-						targetVector->EmplaceBackUsing(dataToMove, tInfo.size, _constructors[i]);
+						if (constructors.moveConstruct)
+						{
+							targetVector->EmplaceBackUsing(dataToMove, tInfo.size, constructors);
+						} else
+						{
+							targetVector->PushBackUsing(dataToMove, tInfo.size, constructors);
+						}
 					} else
 					{
-						targetVector->PushBackUsing(tInfo.size, _constructors[i]);
+						targetVector->PushBackUsing(tInfo.size, constructors);
 					}
 				}
 			}
@@ -660,6 +673,4 @@ namespace flf
 		/// Contains vectors of the components
 		VectorOf<internal::DynamicVector> _componentVectors{_ownResource};
 	};
-	
-	
 }
