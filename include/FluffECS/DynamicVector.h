@@ -112,7 +112,9 @@ namespace flf::internal
 			_sizeEnd += size;
 		}
 		
-		// TODO: Check for bugs
+		/// Default constructs a new element
+		/// \param elementSize equal to sizeof(T)
+		/// \param constructors to use for construction
 		void PushBackUsing(const std::size_t elementSize, const ConstructorVTable constructors) FLUFF_MAYBE_NOEXCEPT
 		{
 			if (_sizeEnd + elementSize > _capacityEnd)
@@ -121,11 +123,16 @@ namespace flf::internal
 			}
 			
 			// push back element
+			assert(constructors.defaultConstruct);
 			constructors.defaultConstruct(_sizeEnd);
 			_sizeEnd += elementSize;
 		}
 		
-		void EmplaceBackUsing(void* data, const std::size_t elementSize, const ConstructorVTable constructors) FLUFF_MAYBE_NOEXCEPT
+		/// Constructs an element in place using the given data
+		/// \param data to move from
+		/// \param elementSize equal to sizeof(T)
+		/// \param constructors to use for construction
+		void EmplaceBackUsing(void *data, const std::size_t elementSize, const ConstructorVTable constructors) FLUFF_MAYBE_NOEXCEPT
 		{
 			if (_sizeEnd + elementSize > _capacityEnd)
 			{
@@ -133,10 +140,29 @@ namespace flf::internal
 			}
 			
 			// push back element
+			assert(constructors.moveConstruct);
 			constructors.moveConstruct(_sizeEnd, data);
 			_sizeEnd += elementSize;
 		}
 		
+		/// Constructs an element by copy
+		/// \param data to copy from
+		/// \param elementSize equal to sizeof(T)
+		/// \param constructors to use for construction
+		void PushBackUsing(void *data, const std::size_t elementSize, const ConstructorVTable constructors) FLUFF_MAYBE_NOEXCEPT
+		{
+			if (_sizeEnd + elementSize > _capacityEnd)
+			{
+				ReserveUsing(elementSize, constructors);
+			}
+			
+			// push back element
+			assert(constructors.copyConstruct);
+			constructors.copyConstruct(_sizeEnd, data);
+			_sizeEnd += elementSize;
+		}
+		
+		// TODO: does not seem to work correctly
 		void ReserveUsing(const size_t elementSize, const ConstructorVTable &constructors) FLUFF_MAYBE_NOEXCEPT
 		{
 			const auto previousSize = ByteSize();
