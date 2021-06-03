@@ -259,7 +259,7 @@ namespace flf
 					}
 				}
 				
-				auto &destination = CreateComponentContainerWith(targetTypes, targetConstructors);
+				auto &destination = CreateComponentContainerWith(targetTypes, targetConstructors, combinedTargetIds);
 				source.MoveEntityTo(destination, entity.Id());
 			}
 		}
@@ -280,7 +280,8 @@ namespace flf
 	private:
 		template<typename TAllocator1, typename TAllocator2>
 		ComponentContainer &CreateComponentContainerWith(const std::vector<TypeInformation, TAllocator1> &infos,
-		                                                 const std::vector<internal::ConstructorVTable, TAllocator2> &constructors) FLUFF_MAYBE_NOEXCEPT
+		                                                 const std::vector<internal::ConstructorVTable, TAllocator2> &constructors,
+		                                                 MultiIdType destinationTypeId) FLUFF_MAYBE_NOEXCEPT
 		{
 			auto *createdContainer = (ComponentContainer *)
 					_containerResource.allocate(sizeof(ComponentContainer), alignof(ComponentContainer));
@@ -294,7 +295,7 @@ namespace flf
 				ids[i] = infos[i].id;
 			}
 			
-			RegisterVector(createdContainer, createdContainer->GetMultiTypeId(), ids);
+			RegisterVector(createdContainer, destinationTypeId, ids);
 			return *createdContainer;
 		}
 		
@@ -374,8 +375,7 @@ namespace flf
 			ComponentContainer &source = ContainerOf(entity.Id());
 			
 			std::array<IdType, sizeof...(TAddedComponents)> tIdsToAdd = {TypeId<TAddedComponents>() ...};
-			const MultiIdType destinationTypeId = internal::CombineIds(source.GetIds().cbegin(), source.GetIds().cend(), tIdsToAdd.cbegin(),
-			                                                           tIdsToAdd.cend());
+			const MultiIdType destinationTypeId = internal::CombineIds(tIdsToAdd.cbegin(), tIdsToAdd.cend()) xor source.GetMultiTypeId();
 			
 			ComponentContainer *destination{};
 			if (_componentContainers.count(destinationTypeId))
@@ -388,8 +388,8 @@ namespace flf
 				std::pmr::vector<internal::ConstructorVTable> constructors{source.GetConstructorTable(), &_tempResource};
 				
 				// the vector is already sorted, we only need to insert the new data at the correct position to keep it sorted
-				std::array<TypeInformation, sizeof...(TAddedComponents)> tInfosToAdd = {TypeInformation::Of<TAddedComponents>() ...};
-				std::array<internal::ConstructorVTable, sizeof...(TAddedComponents)> constructorsToAdd = {
+				constexpr std::array<TypeInformation, sizeof...(TAddedComponents)> tInfosToAdd = {TypeInformation::Of<TAddedComponents>() ...};
+				constexpr std::array<internal::ConstructorVTable, sizeof...(TAddedComponents)> constructorsToAdd = {
 						internal::ConstructorVTable::Of<TAddedComponents>() ...};
 				for (std::size_t i = 0; i < tIdsToAdd.size(); ++i)
 				{
@@ -403,11 +403,11 @@ namespace flf
 					}
 					
 					// add info here
-					tInfos.insert(tInfos.cbegin() + insertionPosition, tInfosToAdd[i]);
-					constructors.insert(constructors.cbegin() + insertionPosition, constructorsToAdd[i]);
+					tInfos.insert(tInfos.cbegin() + (long long) insertionPosition, tInfosToAdd[i]);
+					constructors.insert(constructors.cbegin() + (long long) insertionPosition, constructorsToAdd[i]);
 				}
 				
-				destination = &CreateComponentContainerWith(tInfos, constructors);
+				destination = &CreateComponentContainerWith(tInfos, constructors, destinationTypeId);
 			}
 			
 			source.MoveEntityTo(*destination, entity.Id());
