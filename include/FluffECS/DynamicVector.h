@@ -29,27 +29,6 @@ namespace flf::internal
 		}
 	
 	public:
-		/// Sets the vectors memory resource. Reallocates the current memory, if there is any
-		/// \param resource
-		void SetMemoryResource(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
-		{
-			if (_begin != _sizeEnd && not resource.is_equal(*_resource))
-			{
-				// reallocate memory
-				const auto byteSize = ByteSize();
-				const auto byteCapacity = ByteCapacity();
-				
-				void *nextMemory = resource.allocate(byteCapacity);
-				std::memcpy(nextMemory, _begin, byteSize);
-				_resource->deallocate(_begin, byteCapacity); // use 0 for alignment as pointer is already correctly aligned
-				
-				_begin = (std::byte *) nextMemory;
-				_sizeEnd = _begin + byteCapacity;
-			}
-			
-			_resource = &resource;
-		}
-		
 		/// \return the size of vector in bytes
 		[[nodiscard]] inline std::size_t ByteSize() const FLUFF_NOEXCEPT
 		{
@@ -94,13 +73,13 @@ namespace flf::internal
 		}
 		
 		/// Similar to PushBack, just with using raw byte data
-		/// \param size of the data to add. Note that the size of the type already contained must be equal to size
-		void PushBackBytes(std::size_t size) FLUFF_MAYBE_NOEXCEPT
+		/// \param elementSize of the data to add. Note that the elementSize of the type already contained must be equal to elementSize
+		void PushBackBytes(std::size_t elementSize) FLUFF_MAYBE_NOEXCEPT
 		{
-			GrowSingle(size);
+			GrowSingle(elementSize);
 			
-			std::memset(_sizeEnd, 0, size);
-			_sizeEnd += size;
+			std::memset(_sizeEnd, 0, elementSize);
+			_sizeEnd += elementSize;
 		}
 		
 		/// Similar to PushBack, just with using raw byte data. Note that this leaves the new bytes uninitialized
