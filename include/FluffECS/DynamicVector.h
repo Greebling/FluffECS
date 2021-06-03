@@ -165,8 +165,8 @@ namespace flf::internal
 		// TODO: does not seem to work correctly
 		void ReserveUsing(const size_t elementSize, const ConstructorVTable &constructors) FLUFF_MAYBE_NOEXCEPT
 		{
-			const auto previousSize = ByteSize();
-			const auto nextByteCapacity = NextSize((previousSize / elementSize)) * elementSize;
+			const auto previousCapacity = ByteCapacity();
+			const auto nextByteCapacity = NextSize((previousCapacity / elementSize)) * elementSize;
 			
 			auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextByteCapacity));
 			
@@ -195,9 +195,9 @@ namespace flf::internal
 			}
 			
 			
-			_resource->deallocate(_begin, previousSize);
+			_resource->deallocate(_begin, previousCapacity);
 			_begin = next;
-			_sizeEnd = next + previousSize;
+			_sizeEnd = next + previousCapacity;
 			_capacityEnd = next + nextByteCapacity;
 		}
 		
@@ -475,6 +475,7 @@ namespace flf::internal
 			}
 			
 			const auto byteSize = ByteSize();
+			const auto previousByteCapacity = ByteCapacity();
 			auto nextCapacity = NextSize(number) * sizeof(T);
 			if (nextCapacity < MIN_OBJECT_COUNT * sizeof(T))
 			{
@@ -517,7 +518,7 @@ namespace flf::internal
 				}
 			}
 			
-			_resource->deallocate(_begin, byteSize);
+			_resource->deallocate(_begin, previousByteCapacity);
 			
 			_begin = next;
 			_sizeEnd = _begin + byteSize;
