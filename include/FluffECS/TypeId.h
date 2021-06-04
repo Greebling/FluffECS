@@ -6,11 +6,16 @@
 #include <string_view>
 #include <array>
 
+#include "Keywords.h"
+
 #if _MSC_VER && !__INTEL_COMPILER // yeah msvc getting the special treatment... (https://en.cppreference.com/w/cpp/language/operator_alternative)
 
 #include <ciso646>
 
 #endif
+
+/// Activates additional name member for flf::TypeInformation, especially helpful for debugging
+//#define FLUFF_TYPE_INFO_NAME
 
 namespace flf
 {
@@ -116,16 +121,33 @@ namespace flf
 	public:
 		IdType id = 0;
 		std::size_t size = 0;
+#ifdef FLUFF_TYPE_INFO_NAME
+		std::string_view name{};
+#endif
 	
 	public:
 		template<typename T>
 		static constexpr TypeInformation Of() FLUFF_NOEXCEPT
 		{
-			return TypeInformation(TypeId<T>(), sizeof(T));
+			return TypeInformation(TypeId<T>(),
+			                       sizeof(T)
+#ifdef FLUFF_TYPE_INFO_NAME
+					,internal::GetTypeName<T>()
+#endif
+			);
 		}
 		
 		constexpr TypeInformation(IdType id, std::size_t size) FLUFF_NOEXCEPT
 				: id(id), size(size)
+		{
+		}
+		
+		constexpr TypeInformation(IdType id, std::size_t size, std::string_view name) FLUFF_NOEXCEPT
+				: id(id),
+				size(size)
+#ifdef FLUFF_TYPE_INFO_NAME
+				,name(name)
+#endif
 		{
 		}
 		
