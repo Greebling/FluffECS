@@ -1,5 +1,5 @@
 #include <iostream>
-#include <FluffECS/World.h>
+#include <FluffECS/World.h> // including this file is enough to give you the full functionality of FluffECS
 
 struct PositionData
 {
@@ -21,7 +21,8 @@ int main()
 	
 	// iterate over all entities with specific components
 	float deltaTime = 1.f / 60.f;
-	myWorld.Foreach<PositionData &, VelocityData>( // both reference and value semantics are supported for increased performance!
+	myWorld.Foreach<PositionData &, VelocityData>(
+			// both reference and value semantics are supported, giving the compiler additional possibilities to optimize
 			[deltaTime](PositionData &position, VelocityData velocity)
 			{
 				position.x += velocity.dx * deltaTime;
@@ -29,9 +30,11 @@ int main()
 				position.z += velocity.dz * deltaTime;
 			}
 	);
+	
 	// can also get the entities ID for additional information
 	myWorld.ForeachEntity<PositionData&>(
-			[](flf::EntityId id, auto position) // can also use auto types for parameters
+			// using auto types for parameters is of course also possible
+			[](flf::EntityId id, auto position)
 			{
 				position.x += ((float) id) * 0.01f;
 			}
@@ -44,6 +47,6 @@ int main()
 	{
 		std::cout << "Entity is at " << position->x << " | " << position->y << " | " << position->z << "\n";
 	}
-	auto &position = myWorld.Get<PositionData>(addedEntity); // get specific components of entities
+	
 	addedEntity.Destroy(); // destroys the entity and all of its components
 }
