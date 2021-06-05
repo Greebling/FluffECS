@@ -13,3 +13,11 @@
 #define FLUFF_LIKELY
 #define FLUFF_UNLIKELY
 #endif
+
+#include <type_traits>
+
+namespace flf
+{
+	template<typename T>
+	using ValueType = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
+}
