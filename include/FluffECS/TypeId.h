@@ -39,16 +39,14 @@ namespace flf
 		template<typename T>
 		constexpr auto GetTypeName()
 		{
-#if defined __clang__ || defined __GNUC__
+
+#if defined linux && defined __clang__ \
+			// for some reason clang on linux omits the constexpr qualifier of this function, but on windows i
 			constexpr std::string_view str = GetFuncName<T>();
-			
-			if constexpr(str.size() < 55)
-			{
-				return std::string_view();
-			} else
-			{
-				return std::string_view(str.substr(54, str.length() - 55));
-			}
+			return std::string_view(str.substr(39, str.length() - 40));
+#elif defined __clang__ || defined __GNUC__
+			constexpr std::string_view str = GetFuncName<T>();
+			return std::string_view(str.substr(54, str.length() - 55));
 #elif _MSC_VER && !__INTEL_COMPILER
 			constexpr std::string_view str = GetFuncName<T>();
 			
@@ -107,9 +105,6 @@ namespace flf
 		if constexpr(sizeof...(Ts) == 0)
 		{
 			return 0;
-		} else if constexpr(sizeof...(Ts) == 1)
-		{
-			return MultiTypeId<>() xor (..., TypeId<Ts>()); // trick to simply return TypeId<T>()
 		} else
 		{
 			return MultiTypeId<>() xor (TypeId<Ts>() xor ...);
@@ -141,15 +136,15 @@ namespace flf
 				: id(id), size(size)
 		{
 		}
-		
+
+#ifdef FLUFF_TYPE_INFO_NAME
 		constexpr TypeInformation(IdType id, std::size_t size, std::string_view name) FLUFF_NOEXCEPT
 				: id(id),
-				size(size)
-#ifdef FLUFF_TYPE_INFO_NAME
-				,name(name)
-#endif
+				size(size),
+				name(name)
 		{
 		}
+#endif
 		
 		TypeInformation() FLUFF_NOEXCEPT = default;
 	};
