@@ -3,6 +3,7 @@
 #include <cassert>
 #include <vector>
 #include <memory_resource>
+#include <type_traits>
 
 #include "TypeId.h"
 #include "Entity.h"
@@ -14,9 +15,6 @@
 
 namespace flf
 {
-	template<typename ...TComponents>
-	class IteratorContainer;
-	
 	class ComponentContainer
 	{
 	public:
@@ -514,7 +512,7 @@ namespace flf
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = {TypeId<ValueType<TComponents>>()...};
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -542,12 +540,12 @@ namespace flf
 		template<typename ...TComponents>
 		std::tuple<TComponents *...> RawEnd() FLUFF_NOEXCEPT
 		{
-			assert(ContainsType(TypeId<std::remove_cvref_t<TComponents>>()) && ...);
+			assert((ContainsType(TypeId<ValueType<TComponents>>()) && ...));
 			
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = {TypeId<ValueType<TComponents>>()...};
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -580,7 +578,7 @@ namespace flf
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = {TypeId<ValueType<TComponents>>()...};
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -613,7 +611,7 @@ namespace flf
 			std::array<void *, sizeof...(TComponents)> pointers{};
 			
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = SortedTypeIdList<std::remove_cvref_t<TComponents>...>();
+				constexpr std::array<IdType, sizeof...(TComponents)> ids = {TypeId<ValueType<TComponents>>()...};
 				
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -647,8 +645,7 @@ namespace flf
 		/// \return a tuple of correctly typed pointers
 		template<typename ...TComponents, std::size_t ...Is>
 		static constexpr std::tuple<TComponents *...>
-		PointerArrayToTuple(std::array<void *, sizeof...(TComponents)> pointers,
-		                    std::integer_sequence<std::size_t, Is...> seq) FLUFF_NOEXCEPT
+		PointerArrayToTuple(std::array<void *, sizeof...(TComponents)> pointers, std::integer_sequence<std::size_t, Is...>) FLUFF_NOEXCEPT
 		{
 			static_assert(sizeof...(TComponents) == sizeof...(Is));
 			return {reinterpret_cast<TComponents *>(pointers[Is])...};

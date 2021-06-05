@@ -52,13 +52,14 @@ namespace flf
 		{
 			static_assert(((not std::is_pointer_v<TComponents>) && ...), "Type cannot be a pointer");
 			static_assert(std::is_invocable_v<TFunc, TComponents...>, "Function parameters do not match with given template parameters");
-			std::vector<ComponentContainer *> containers = CollectVectorsOf<std::remove_cvref_t<TComponents>...>();
+			std::vector<ComponentContainer *> containers = CollectVectorsOf<ValueType<TComponents>...>();
 			
 			for (ComponentContainer *container : containers)
 			{
 				std::tuple<std::remove_reference_t<TComponents> *...> begins = container->template RawBegin<std::remove_reference_t<TComponents>...>();
 				const std::tuple<std::remove_reference_t<TComponents> *...> ends = container->template RawEnd<std::remove_reference_t<TComponents>...>();
-				
+				auto begin = std::get<0>(begins);
+				auto end = std::get<0>(ends);
 				while (std::get<0>(begins) < std::get<0>(ends))
 				{
 					function((*std::get<std::remove_reference_t<TComponents> *>(begins)) ...);
@@ -77,7 +78,7 @@ namespace flf
 			static_assert(((not std::is_pointer_v<TComponents>) && ...), "Type cannot be a pointer");
 			static_assert(std::is_invocable_v<TFunc, EntityId, TComponents...>,
 			              "Function parameters do not match with given template parameters or missing an flf::EntityId");
-			std::vector<ComponentContainer *> containers = CollectVectorsOf<std::remove_cvref_t<TComponents>...>();
+			std::vector<ComponentContainer *> containers = CollectVectorsOf<ValueType<TComponents>...>();
 			
 			for (ComponentContainer *container : containers)
 			{
@@ -308,27 +309,10 @@ namespace flf
 			return CollectVectorsOfImpl(internal::Sort(internal::TypeList<std::remove_const_t<std::remove_reference_t<TComponents>>...>()));
 		}
 		
-		/// Collects all vectors of ComponentVectors that contain at least the given types
-		/// \tparam TComponents the types that the ComponentVectors need to contain at least to be relevant
-		/// \return a list of tuples of vectors containing the given components
-		template<typename ...TComponents>
-		std::vector<const ComponentContainer *> CollectVectorsOf() const FLUFF_NOEXCEPT
-		{
-			return CollectVectorsOfImpl(internal::Sort(internal::TypeList<std::remove_const_t<std::remove_reference_t<TComponents>>...>()));
-		}
-		
 		/// Collects all vectors containing at minimum the given components
 		/// \return a list of pointers to those containers
 		template<typename ...TComponents>
 		std::vector<ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) FLUFF_NOEXCEPT
-		{
-			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents>() ...});
-		}
-		
-		/// Collects all vectors containing at minimum the given components
-		/// \return a list of const pointers to those containers
-		template<typename ...TComponents>
-		std::vector<const ComponentContainer *> CollectVectorsOfImpl(internal::TypeList<TComponents...>) const FLUFF_NOEXCEPT
 		{
 			return _vectorsMap.GetAllFromSequence<sizeof...(TComponents)>({TypeId<TComponents>() ...});
 		}
