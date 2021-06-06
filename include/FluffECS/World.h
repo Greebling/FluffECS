@@ -58,8 +58,6 @@ namespace flf
 			{
 				std::tuple<std::remove_reference_t<TComponents> *...> begins = container->template RawBegin<std::remove_reference_t<TComponents>...>();
 				const std::tuple<std::remove_reference_t<TComponents> *...> ends = container->template RawEnd<std::remove_reference_t<TComponents>...>();
-				auto begin = std::get<0>(begins);
-				auto end = std::get<0>(ends);
 				while (std::get<0>(begins) < std::get<0>(ends))
 				{
 					function((*std::get<std::remove_reference_t<TComponents> *>(begins)) ...);
