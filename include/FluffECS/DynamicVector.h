@@ -411,22 +411,6 @@ namespace flf::internal
 			return Back<T>();
 		}
 		
-		/// Call the copy constructor of T amount times, appending the copies to the end of the vector
-		/// \tparam T Type of element to clone
-		/// \param amount of clones to create
-		/// \param prototype to clone from
-		template<typename T>
-		void Clone(std::size_t amount, const T &prototype) FLUFF_MAYBE_NOEXCEPT
-		{
-			const auto previousSize = Size<T>();
-			ResizeUnsafe<T>(previousSize + amount);
-			
-			for (T *curr = reinterpret_cast<T *>(_begin) + previousSize, *const end = reinterpret_cast<T *>(_sizeEnd); curr < end; ++curr)
-			{
-				new(curr) T(prototype);
-			}
-		}
-		
 		/// Removes the last element
 		/// \tparam T Destructor of that type will be called on the last element
 		template<typename T>
