@@ -39,16 +39,23 @@ namespace flf
 		template<typename T>
 		constexpr auto GetTypeName()
 		{
-
-#if defined linux && defined __clang__ \
-			// for some reason clang on linux omits the constexpr qualifier of this function, but on windows i
 			constexpr std::string_view str = GetFuncName<T>();
-			return std::string_view(str.substr(39, str.length() - 40));
-#elif defined __clang__ || defined __GNUC__
-			constexpr std::string_view str = GetFuncName<T>();
-			return std::string_view(str.substr(54, str.length() - 55));
+#if defined __clang__ || defined __GNUC__
+			if constexpr(str.empty())
+			{
+				return str;
+			} else
+			{
+				if constexpr(str[0] != 'c')
+				{
+					// if missing 'constexpr' identifier
+					return std::string_view(str.substr(39, str.length() - 40));
+				} else
+				{
+					return std::string_view(str.substr(54, str.length() - 55));
+				}
+			}
 #elif _MSC_VER && !__INTEL_COMPILER
-			constexpr std::string_view str = GetFuncName<T>();
 			
 			if constexpr(str.size() < 53)
 			{
