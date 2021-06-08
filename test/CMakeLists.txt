@@ -1,8 +1,8 @@
-add_executable(FluffECSTEST
+add_executable(FluffECSTest
         doctest.h
         TestDefinition.cpp
         TestDynamicVector.cpp
        )
 
 
-target_compile_options(FluffECSTEST PRIVATE -Wall -std=c++20)
+target_compile_options(FluffECSTest PRIVATE -Wall -std=c++20)

@@ -2,8 +2,10 @@
 
 At the heart of this C++17 library is the `flf::World` class: It takes care of saving all of the entities components in contigous memory. It is designed to make iterations through components as fast as possible, arriving at the same speed as iterating over raw vectors.
 
-# Usage Usage
+# Example
 ```c++
+#include <FluffECS/World.h>
+
 struct PositionData
 {
     float x, y, z;
@@ -30,12 +32,11 @@ void Update()
     );
 }
 ```
-Another example of how this library might be used can be found in examples/example.cpp
+Another example of how this library might be used can be found under examples/example.cpp
 
 # Building
-To use FluffECS in your project you add the following lines to your CMakeLists.txt (your path to the FluffECS folder may vary, though):
+To use FluffECS in your project you add the following lines to your CMakeLists.txt:
 ```cmake
-add_subdirectory(libs/FluffECS)
-target_include_directories(YOUR_TARGET PUBLIC libs/FluffECS/include)
+add_subdirectory(PATH_TO_FLUFF_ECS_TOP_FOLDER)
 target_link_libraries(YOUR_TARGET PUBLIC FluffECS)
 ```
