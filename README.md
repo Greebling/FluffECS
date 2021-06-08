@@ -19,7 +19,7 @@ void Update()
     myWorld.CreateMultiple(16, PositionData{4.f, 2.f, 0.f}, VelocityData{1.f, 0, 0});
     
     myWorld.Foreach<PositionData &, VelocityData>(
-        // both reference and value semantics are supported, giving the compiler additional possibilities to optimize
+        // both reference and value semantics are supported, giving the compiler more possibilities to optimize
         [deltaTime](PositionData &position, VelocityData velocity)
         {
           position.x += velocity.dx * deltaTime;
