@@ -2,7 +2,7 @@
 
 namespace flf
 {
-	using EntityId = std::uint32_t;
+	using EntityId = std::size_t;
 	
 	namespace internal
 	{

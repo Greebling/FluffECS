@@ -164,7 +164,9 @@ namespace flf
 			const auto endSize = beginSize + amount;
 			
 			RegisterMultiple(beginSize, endSize);
-			((GetVector<TComponents>().template Clone<TComponents>(amount, components)), ...);
+			
+			((GetVector<TComponents>().template ResizeUnsafe<TComponents>(amount)), ...);
+			((GetVector<TComponents>().template Fill<TComponents>(beginSize, endSize, components)), ...);
 		}
 		
 		/// Removes all components associated with the given id
@@ -448,8 +450,10 @@ namespace flf
 		/// \param endSize size of the container AFTER the creation of these entities
 		void RegisterMultiple(IndexType beginSize, IndexType endSize) FLUFF_MAYBE_NOEXCEPT
 		{
-			_componentIds.resize(endSize);
-			_sparse.Resize(endSize);
+			const IndexType nextFreeIndex = world->PeekNextFreeIndex();
+			const IndexType nEntities = endSize = beginSize;
+			_componentIds.resize(nextFreeIndex + nEntities);
+			_sparse.Resize(nextFreeIndex + nEntities);
 			
 			for (IndexType i = beginSize; i < endSize; ++i)
 			{

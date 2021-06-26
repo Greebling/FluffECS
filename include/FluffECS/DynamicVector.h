@@ -23,8 +23,7 @@ namespace flf::internal
 	public:
 		constexpr ByteVector() FLUFF_NOEXCEPT = default;
 		
-		constexpr explicit ByteVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
-				: _resource(&resource)
+		constexpr explicit ByteVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT: _resource(&resource)
 		{
 		}
 	
@@ -153,16 +152,14 @@ namespace flf::internal
 			
 			if (constructors.moveConstruct != nullptr)
 			{
-				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
-				     begin < end; begin += elementSize, target += elementSize)
+				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next; begin < end; begin += elementSize, target += elementSize)
 				{
 					constructors.moveConstruct(begin, target);
 					constructors.destruct(begin);
 				}
 			} else if (constructors.copyConstruct != nullptr)
 			{
-				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next;
-				     begin < end; begin += elementSize, target += elementSize)
+				for (std::byte *begin = std::launder(_begin), *const end = _sizeEnd, *target = next; begin < end; begin += elementSize, target += elementSize)
 				{
 					constructors.copyConstruct(begin, target);
 					constructors.destruct(begin);
@@ -245,13 +242,13 @@ namespace flf::internal
 		std::byte *_capacityEnd{};
 	};
 	
-	class DynamicVector : public ByteVector
+	class DynamicVector :
+			public ByteVector
 	{
 	public:
 		constexpr DynamicVector() FLUFF_NOEXCEPT = default;
 		
-		constexpr explicit DynamicVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT
-				: ByteVector(resource)
+		constexpr explicit DynamicVector(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT: ByteVector(resource)
 		{
 		}
 		
@@ -357,6 +354,15 @@ namespace flf::internal
 			return ByteCapacity() / sizeof(T);
 		}
 		
+		template<typename T>
+		void Fill(std::size_t begin, std::size_t end, T data) FLUFF_NOEXCEPT
+		{
+			for (T *currPtr = reinterpret_cast<T *>(_begin) + begin, *const endPtr = reinterpret_cast<T *>(_begin) + end; currPtr < endPtr; currPtr++)
+			{
+				*currPtr = data;
+			}
+		}
+		
 		/// Adds an element at the back
 		/// \tparam T Type of element to add
 		/// \return A reference to the added element
@@ -455,10 +461,8 @@ namespace flf::internal
 				std::memcpy(next, _begin, byteSize);
 			} else
 			{
-				for (T *target = reinterpret_cast<T *>(next),
-						     *const targetEnd = target + (byteSize / sizeof(T)),
-						     *source = std::launder(reinterpret_cast<T *>(_begin));
-				     target < targetEnd; ++target, ++source)
+				for (T *target = reinterpret_cast<T *>(next), *const targetEnd = target + (byteSize / sizeof(T)), *source = std::launder(
+						reinterpret_cast<T *>(_begin)); target < targetEnd; ++target, ++source)
 				{
 					if constexpr (std::is_move_constructible_v<T>)
 					{
@@ -474,8 +478,7 @@ namespace flf::internal
 			
 			if constexpr(not std::is_trivially_destructible_v<T>)
 			{
-				for (T *source = std::launder(reinterpret_cast<T *>(_begin)), *const sourceEnd = reinterpret_cast<T *>(_sizeEnd);
-				     source < sourceEnd; ++source)
+				for (T *source = std::launder(reinterpret_cast<T *>(_begin)), *const sourceEnd = reinterpret_cast<T *>(_sizeEnd); source < sourceEnd; ++source)
 				{
 					std::destroy_at(source);
 				}
@@ -505,8 +508,7 @@ namespace flf::internal
 				Reserve<T>(size);
 				
 				// init objects
-				for (T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize, *end =
-						std::launder(reinterpret_cast<T *>(_begin)) + size;
+				for (T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize, *end = std::launder(reinterpret_cast<T *>(_begin)) + size;
 				     curr < end; ++curr)
 				{
 #if __cplusplus > 201703L
@@ -520,8 +522,7 @@ namespace flf::internal
 			{
 				auto nRemovedElements = size - previousSize;
 				// remove last elements
-				for (T *current = reinterpret_cast<T *>(_sizeEnd) - nRemovedElements;
-				     current < reinterpret_cast<T *>(_sizeEnd); ++current)
+				for (T *current = reinterpret_cast<T *>(_sizeEnd) - nRemovedElements; current < reinterpret_cast<T *>(_sizeEnd); ++current)
 				{
 					std::destroy_at(current);
 				}
@@ -530,7 +531,7 @@ namespace flf::internal
 		}
 		
 		/// Sets Size<T> = size and does a reallocation if necessary.
-		/// WARNING: This does not call constructors or destructors, meaning that you will be accessing unallocated memory.
+		/// WARNING: This does not call constructors for new elements, meaning that you will be accessing unallocated memory.
 		/// However, this method is considerably faster for large sizes
 		/// \tparam T Type to use for resizing. Its default constructor will be called for new elements
 		/// \param size Number of elements to contain in vector
