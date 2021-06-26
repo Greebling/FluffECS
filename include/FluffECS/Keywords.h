@@ -19,5 +19,5 @@
 namespace flf
 {
 	template<typename T>
-	using ValueType = std::remove_pointer_t<std::remove_reference_t<std::remove_cv_t<T>>>;
+	using ValueType = std::remove_const_t<std::remove_pointer_t<std::remove_reference_t<T>>>;
 }

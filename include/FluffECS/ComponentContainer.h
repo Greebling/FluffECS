@@ -108,6 +108,21 @@ namespace flf
 		/// \tparam TComponents of the entity
 		/// \return the id of the created entity
 		template<typename ...TComponents>
+		EntityId PushBack(const TComponents &...comps) FLUFF_MAYBE_NOEXCEPT
+		{
+			assert("Given Component types were not in container!" && sizeof...(TComponents) == _typeInfos.size());
+			
+			((GetVector<TComponents>().template PushBack<TComponents>(comps)), ...);
+			auto index = world->TakeNextFreeIndex(*this);
+			_sparse.AddEntry(index, _componentIds.size());
+			_componentIds.push_back(index);
+			return index;
+		}
+		
+		/// Creates a single entity with the given components
+		/// \tparam TComponents of the entity
+		/// \return the id of the created entity
+		template<typename ...TComponents>
 		EntityId EmplaceBack(TComponents &&...components) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(sizeof...(TComponents) == _typeInfos.size() && "Given Component types were not in container!");

@@ -137,10 +137,10 @@ namespace flf
 		template<typename ...TComponents>
 		inline Entity CreateEntity(TComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
-			(AssertCanBeComponent<TComponents>(), ...);
+			static_assert((!std::is_pointer_v<TComponents> && ...), "Type cannot be a pointer");
+			(AssertCanBeComponent<ValueType<TComponents>>(), ...);
 			
-			return CreateEntityImpl(internal::Sort(internal::TypeList<TComponents...>()), std::forward<TComponents>(args)...);
+			return CreateEntityImpl(internal::Sort(internal::TypeList<ValueType<TComponents>...>()), std::forward<TComponents>(args)...);
 		}
 		
 		/// Creates multiple entities with the given types
@@ -161,30 +161,13 @@ namespace flf
 		/// \param numEntities to create
 		/// \param args r value reference of components these entities shall have a copy of
 		template<typename ...TComponents>
-		inline void CreateMultiple(EntityId numEntities, TComponents &&...args) FLUFF_MAYBE_NOEXCEPT
+		inline void CreateMultiple(EntityId numEntities, const TComponents &...args) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
-			(AssertCanBeComponent<TComponents>(), ...);
+			static_assert((!std::is_pointer_v<TComponents> && ...), "Type cannot be a pointer");
+			(AssertCanBeComponent<ValueType<TComponents>>(), ...);
 			
 			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
-			
-			// create a place to copy the components from as forwarded data should only be used once
-			auto tup = std::make_tuple( TComponents(std::forward<TComponents>(args))...);
-			CreateMultipleWith(internal::Sort(internal::TypeList<TComponents...>()), numEntities, std::get<TComponents>(tup)...);
-		}
-		
-		/// Creates multiple entities with the given components
-		/// \tparam TComponents the entities should contain
-		/// \param numEntities to create
-		/// \param args components these entities shall have a copy of
-		template<typename ...TComponents>
-		inline void CreateMultiple(EntityId numEntities, TComponents &...args) FLUFF_MAYBE_NOEXCEPT
-		{
-			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
-			(AssertCanBeComponent<TComponents>(), ...);
-			
-			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
-			CreateMultipleWith(internal::Sort(internal::TypeList<TComponents...>()), numEntities, args...);
+			CreateMultipleWith(internal::Sort(internal::TypeList<ValueType<TComponents>...>()), numEntities, args...);
 		}
 		
 		/// Creates multiple clones from a given entity prototype
@@ -339,6 +322,13 @@ namespace flf
 		}
 		
 		template<typename ...TComponents, typename ...TAddedComponents>
+		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>, TAddedComponents &...args) FLUFF_MAYBE_NOEXCEPT
+		{
+			ComponentContainer &vec = GetComponentVector<TComponents...>();
+			return Entity(vec.PushBack((args)...), *this);
+		}
+		
+		template<typename ...TComponents, typename ...TAddedComponents>
 		inline Entity CreateEntityImpl(internal::TypeList<TComponents...>, TAddedComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
@@ -353,7 +343,7 @@ namespace flf
 		}
 		
 		template<typename ...TComponents, typename ...TComponentsToAdd>
-		inline void CreateMultipleWith(internal::TypeList<TComponents...>, EntityId numEntities, TComponentsToAdd &...args)
+		inline void CreateMultipleWith(internal::TypeList<TComponents...>, EntityId numEntities, const TComponentsToAdd &...args)
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
 			vec.Clone(numEntities, args...);

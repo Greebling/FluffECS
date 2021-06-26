@@ -380,7 +380,7 @@ namespace flf::internal
 		/// \param element to emplace
 		/// \return A reference to the added element
 		template<typename T>
-		inline T &PushBack(T &element) FLUFF_MAYBE_NOEXCEPT
+		inline T &PushBack(const T &element) FLUFF_MAYBE_NOEXCEPT
 		{
 			Reserve<T>(Size<T>() + 1);
 			new(reinterpret_cast<T *>(_sizeEnd)) T(element);
