@@ -159,7 +159,7 @@ namespace flf
 		/// Creates multiple entities with the given components
 		/// \tparam TComponents the entities should contain
 		/// \param numEntities to create
-		/// \param args components these entities shall have a copy of
+		/// \param args r value reference of components these entities shall have a copy of
 		template<typename ...TComponents>
 		inline void CreateMultiple(EntityId numEntities, TComponents &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
@@ -167,8 +167,24 @@ namespace flf
 			(AssertCanBeComponent<TComponents>(), ...);
 			
 			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
-			CreateMultipleWith(internal::Sort(internal::TypeList<TComponents...>()), numEntities,
-			                   std::forward<TComponents>(args)...);
+			
+			// create a place to copy the components from as forwarded data should only be used once
+			auto tup = std::make_tuple( TComponents(std::forward<TComponents>(args))...);
+			CreateMultipleWith(internal::Sort(internal::TypeList<TComponents...>()), numEntities, std::get<TComponents>(tup)...);
+		}
+		
+		/// Creates multiple entities with the given components
+		/// \tparam TComponents the entities should contain
+		/// \param numEntities to create
+		/// \param args components these entities shall have a copy of
+		template<typename ...TComponents>
+		inline void CreateMultiple(EntityId numEntities, TComponents &...args) FLUFF_MAYBE_NOEXCEPT
+		{
+			static_assert((std::is_same_v<std::decay_t<TComponents>, TComponents> && ...), "Type cannot be reference or pointer");
+			(AssertCanBeComponent<TComponents>(), ...);
+			
+			_entityToContainer.Reserve(_nextFreeIndex + numEntities);
+			CreateMultipleWith(internal::Sort(internal::TypeList<TComponents...>()), numEntities, args...);
 		}
 		
 		/// Creates multiple clones from a given entity prototype
@@ -337,10 +353,10 @@ namespace flf
 		}
 		
 		template<typename ...TComponents, typename ...TComponentsToAdd>
-		inline void CreateMultipleWith(internal::TypeList<TComponents...>, EntityId numEntities, TComponentsToAdd &&...args)
+		inline void CreateMultipleWith(internal::TypeList<TComponents...>, EntityId numEntities, TComponentsToAdd &...args)
 		{
 			ComponentContainer &vec = GetComponentVector<TComponents...>();
-			vec.Clone(numEntities, std::forward<TComponentsToAdd>(args)...);
+			vec.Clone(numEntities, args...);
 		}
 		
 		/// Moves the entity to archetype wit entities components + TAddedComponents, but does not create TAddedComponents!
