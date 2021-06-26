@@ -165,7 +165,7 @@ namespace flf
 			
 			RegisterMultiple(beginSize, endSize);
 			
-			((GetVector<TComponents>().template ResizeUnsafe<TComponents>(amount)), ...);
+			((GetVector<TComponents>().template ResizeUnsafe<TComponents>(endSize)), ...);
 			((GetVector<TComponents>().template Fill<TComponents>(beginSize, endSize, components)), ...);
 		}
 		
@@ -451,8 +451,8 @@ namespace flf
 		void RegisterMultiple(IndexType beginSize, IndexType endSize) FLUFF_MAYBE_NOEXCEPT
 		{
 			const IndexType nextFreeIndex = world->PeekNextFreeIndex();
-			const IndexType nEntities = endSize = beginSize;
-			_componentIds.resize(nextFreeIndex + nEntities);
+			const IndexType nEntities = endSize - beginSize;
+			_componentIds.resize(endSize);
 			_sparse.Resize(nextFreeIndex + nEntities);
 			
 			for (IndexType i = beginSize; i < endSize; ++i)
