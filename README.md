@@ -35,7 +35,7 @@ void Update()
 Another example of how this library might be used can be found under examples/example.cpp
 
 # Building
-To use FluffECS in your project you add the following lines to your CMakeLists.txt:
+To use FluffECS in your project add the following lines to your CMakeLists.txt:
 ```cmake
 add_subdirectory(PATH_TO_FLUFF_ECS_TOP_FOLDER)
 target_link_libraries(YOUR_TARGET PUBLIC FluffECS)
