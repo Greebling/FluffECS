@@ -46,7 +46,15 @@ namespace flf::internal
 		/// Creates a new unique id for an entity
 		/// \param owner of that new entity
 		/// \return the a free unique id for an entity in this world
-		inline EntityId TakeNextFreeIndex(ComponentContainer &owner) FLUFF_MAYBE_NOEXCEPT
+		[[nodiscard]] inline EntityId PeekNextFreeIndex() const FLUFF_MAYBE_NOEXCEPT
+		{
+			return _nextFreeIndex;
+		}
+		
+		/// Creates a new unique id for an entity
+		/// \param owner of that new entity
+		/// \return the a free unique id for an entity in this world
+		[[nodiscard]] inline EntityId TakeNextFreeIndex(ComponentContainer &owner) FLUFF_MAYBE_NOEXCEPT
 		{
 			auto index = _nextFreeIndex;
 			// TODO: This is a performance bottleneck. Can we make this more efficient than taking much of the time of creating many entities?
