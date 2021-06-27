@@ -41,14 +41,6 @@ namespace flf
 				  _componentVectors(other._ownResource)
 		{
 		}
-		
-		ComponentContainer(ComponentContainer &&other) FLUFF_MAYBE_NOEXCEPT
-				: _ownResource(other._ownResource),
-				  _sparse(std::move(other._sparse)),
-				  _typeInfos(std::move(other._typeInfos)),
-				  _componentVectors(other._ownResource)
-		{
-		}
 	
 	public:
 		/*
