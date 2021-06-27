@@ -26,9 +26,9 @@ struct MoveDetectingVector3
 	{
 	}
 	
-	MoveDetectingVector3(const MoveDetectingVector3 &t)  = default;
+	MoveDetectingVector3(const MoveDetectingVector3 &t) = default;
 	
-	MoveDetectingVector3(MoveDetectingVector3 && t)  noexcept : x(t.x), y(t.y), z(t.z)
+	MoveDetectingVector3(MoveDetectingVector3 &&t) noexcept: x(t.x), y(t.y), z(t.z)
 	{
 		t.wasMoved = true;
 	}
@@ -123,5 +123,43 @@ TEST_CASE("World CreateMultiple")
 		CHECK_EQ(countDefaultConstruct, 8 + 16);
 		CHECK_EQ(countReferenceConstruct, 8);
 		CHECK_EQ(countForwardConstruct, 8);
+	}
+}
+
+TEST_CASE("World Foreach")
+{
+	flf::World myWord{};
+	
+	std::vector<flf::Entity> createdEntities{};
+	createdEntities.reserve(32);
+	for (std::size_t i = 0; i < 16; ++i)
+	{
+		createdEntities.push_back(myWord.CreateEntity(std::size_t(i), Quaternion{}));
+	}
+	for (std::size_t i = 16; i < 32; ++i)
+	{
+		createdEntities.push_back(myWord.CreateEntity(std::size_t(i)));
+	}
+	
+	
+	std::array<bool, 16> hasAllQuatVector{};
+	myWord.Foreach<std::size_t, Quaternion>([&](std::size_t val, Quaternion quaternion)
+	                                    {
+		                                    hasAllQuatVector[val] = true;
+	                                    });
+	for (const auto item : hasAllQuatVector)
+	{
+		CHECK(item);
+	}
+	
+	
+	std::array<bool, 32> hasAllVector{};
+	myWord.Foreach<std::size_t>([&](std::size_t val)
+	                        {
+		                        hasAllVector[val] = true;
+	                        });
+	for (const auto item : hasAllVector)
+	{
+		CHECK(item);
 	}
 }
