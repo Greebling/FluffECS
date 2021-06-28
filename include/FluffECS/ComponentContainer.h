@@ -521,6 +521,7 @@ namespace flf
 			constexpr std::size_t NumElements = ImportantTypes::Size();
 
 
+            assert((ContainsType(TypeId<ValueType<TComponents>>()) && ...));
 			std::array<void *, NumElements> pointers{};
 
 			{
@@ -547,39 +548,20 @@ namespace flf
 			return PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
 		}
 
-        template<typename ...Ts, std::size_t ...Is>
-        static constexpr std::tuple<Ts *...> PointerToArrayTuple(
-                internal::TypeList<Ts...>, std::array<void *, sizeof...(Ts)> pointers, std::integer_sequence<std::size_t, Is...>) FLUFF_NOEXCEPT
-        {
-            static_assert(sizeof...(Ts) == sizeof...(Is));
-            return {reinterpret_cast<Ts *>(pointers[Is])...};
-        }
-
-        /// Casts a collection of void pointers to typed pointers of a given type
-        /// \tparam TComponents types
-        /// \tparam Is (deduced from make_index_sequence)
-        /// \param pointers to cast
-        /// \param seq generated from std::make_index_sequence<sizeof...(TComponents)>()
-        /// \return a tuple of correctly typed pointers
-        template<typename ...TComponents, std::size_t ...Is>
-        static constexpr std::tuple<TComponents *...> PointerArrayToTuple(
-                std::array<void *, sizeof...(TComponents)> pointers, std::integer_sequence<std::size_t, Is...>) FLUFF_NOEXCEPT
-        {
-            static_assert(sizeof...(TComponents) == sizeof...(Is));
-            return {reinterpret_cast<TComponents *>(pointers[Is])...};
-        }
-
 		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
 		/// \return a tuple of pointers to the end to of all given components
 		template<typename ...TComponents>
-		std::tuple<TComponents *...> RawEnd() FLUFF_NOEXCEPT
+        auto RawEnd() FLUFF_NOEXCEPT
 		{
-			assert((ContainsType(TypeId<ValueType<TComponents>>()) && ...));
+            using ImportantTypes = NonEmptyTypeList<TComponents...>;
+            constexpr std::size_t NumElements = ImportantTypes::Size();
 
-			std::array<void *, sizeof...(TComponents)> pointers{};
+
+			assert((ContainsType(TypeId<ValueType<TComponents>>()) && ...));
+			std::array<void *, NumElements> pointers{};
 
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = {TypeId<ValueType<TComponents>>()...};
+                constexpr std::array<IdType, NumElements> ids = internal::TypeIdsFromList(NonEmptyTypeList<ValueType<TComponents>...>());
 
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -600,18 +582,23 @@ namespace flf
 				}
 			}
 
-			return PointerArrayToTuple<std::remove_reference_t<TComponents>...>(pointers, std::make_index_sequence<sizeof...(TComponents)>());
+            return PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
 		}
 
 		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
 		/// \return a tuple of pointers to the begin to of all given components and to the EntityIds
 		template<typename ...TComponents>
-		std::tuple<TComponents *..., EntityId *> RawBeginWithEntity() FLUFF_NOEXCEPT
+        auto RawBeginWithEntity() FLUFF_NOEXCEPT
 		{
-			std::array<void *, sizeof...(TComponents)> pointers{};
+            using ImportantTypes = NonEmptyTypeList<TComponents...>;
+            constexpr std::size_t NumElements = ImportantTypes::Size();
+
+
+            assert((ContainsType(TypeId<ValueType<TComponents>>()) && ...));
+			std::array<void *, NumElements> pointers{};
 
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = {TypeId<ValueType<TComponents>>()...};
+				constexpr std::array<IdType, NumElements> ids = internal::TypeIdsFromList(NonEmptyTypeList<ValueType<TComponents>...>());
 
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -631,19 +618,24 @@ namespace flf
 				}
 			}
 
-			auto componentData = PointerArrayToTuple<std::remove_reference_t<TComponents>...>(pointers, std::make_index_sequence<sizeof...(TComponents)>());
+			auto componentData = PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
 			return std::tuple_cat(componentData, std::make_tuple(_componentIds.data()));
 		}
 
 		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
 		/// \return a tuple of pointers to the end to of all given components and to the EntityIds
 		template<typename ...TComponents>
-		std::tuple<TComponents *..., EntityId *> RawEndWithEntity() FLUFF_NOEXCEPT
+        auto RawEndWithEntity() FLUFF_NOEXCEPT
 		{
-			std::array<void *, sizeof...(TComponents)> pointers{};
+            using ImportantTypes = NonEmptyTypeList<TComponents...>;
+            constexpr std::size_t NumElements = ImportantTypes::Size();
+
+
+            assert((ContainsType(TypeId<ValueType<TComponents>>()) && ...));
+			std::array<void *, NumElements> pointers{};
 
 			{
-				constexpr std::array<IdType, sizeof...(TComponents)> ids = {TypeId<ValueType<TComponents>>()...};
+                constexpr std::array<IdType, NumElements> ids = internal::TypeIdsFromList(NonEmptyTypeList<ValueType<TComponents>...>());
 
 				std::size_t currPointersIndex = 0;
 				std::size_t i = 0;
@@ -663,11 +655,25 @@ namespace flf
 				}
 			}
 
-			auto componentData = PointerArrayToTuple<std::remove_reference_t<TComponents>...>(pointers, std::make_index_sequence<sizeof...(TComponents)>());
+
+            auto componentData = PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
 			return std::tuple_cat(componentData, std::make_tuple(_componentIds.data() + _componentIds.size()));
 		}
 
 	private:
+        /// Casts a collection of void pointers to typed pointers of a given type
+        /// \tparam Ts types
+        /// \tparam Is (deduced from make_index_sequence)
+        /// \param pointers to cast
+        /// \param seq generated from std::make_index_sequence<sizeof...(TComponents)>()
+        /// \return a tuple of correctly typed pointers
+        template<typename ...Ts, std::size_t ...Is>
+        static constexpr std::tuple<Ts *...> PointerToArrayTuple(
+                internal::TypeList<Ts...>, std::array<void *, sizeof...(Ts)> pointers, std::integer_sequence<std::size_t, Is...>) FLUFF_NOEXCEPT
+        {
+            static_assert(sizeof...(Ts) == sizeof...(Is));
+            return {reinterpret_cast<Ts *>(pointers[Is])...};
+        }
 
 	private:
 		/// The resource the vectors own data is saved in

@@ -12,13 +12,12 @@ struct Vector3 {
 
 
 struct MoveDetectingVector3 {
-    float x, y, z;
+    int x, y, z;
     bool wasMoved = false;
 
-    MoveDetectingVector3() {
-    }
+    MoveDetectingVector3() = default;
 
-    MoveDetectingVector3(float x, float y, float z) : x(x), y(y), z(z) {
+    MoveDetectingVector3(int x, int y, int z) : x(x), y(y), z(z) {
     }
 
     MoveDetectingVector3(const MoveDetectingVector3 &t) = default;
@@ -125,19 +124,21 @@ TEST_CASE("World Foreach Value Types")
     }
 
 
-    std::array<bool, 16> hasAllQuatVector{};
-    myWorld.Foreach<std::size_t, Quaternion>([&](std::size_t val, Quaternion quaternion) {
-        hasAllQuatVector[val] = true;
-    });
-    for (const auto item : hasAllQuatVector) {
+    std::array<bool, 16> hasAllQuaternionAndVector{};
+    myWorld.Foreach<std::size_t, Quaternion>(
+            [&](std::size_t val, Quaternion quaternion) {
+                hasAllQuaternionAndVector[val] = true;
+            });
+    for (const auto item : hasAllQuaternionAndVector) {
         CHECK(item);
     }
 
 
     std::array<bool, 32> hasAllVector{};
-    myWorld.Foreach<std::size_t>([&](std::size_t val) {
-        hasAllVector[val] = true;
-    });
+    myWorld.Foreach<std::size_t>(
+            [&](std::size_t val) {
+                hasAllVector[val] = true;
+            });
     for (const auto item : hasAllVector) {
         CHECK(item);
     }
@@ -173,14 +174,66 @@ TEST_CASE("World Foreach With Empty Type")
         createdEntities.push_back(myWorld.CreateEntity(Vector3{iInt, iInt * 2, iInt * 4}, Quaternion{}, Empty{}));
     }
 
-    using T = flf::internal::FirstNonEmpty<Empty, Empty>;
-
     myWorld.Foreach<Vector3 &, Quaternion, Empty>(
-            [](Vector3 &vec, Quaternion quaternion) {
+            [](Vector3 &vec, Quaternion quaternion, Empty) {
                 vec.y /= 2;
             });
     myWorld.Foreach<Vector3>(
             [](Vector3 vec) {
+                CHECK_EQ(vec.x, vec.y);
+            });
+}
+
+TEST_CASE("World ForeachEntity Value Types")
+{
+    flf::World myWorld{};
+
+    std::vector<flf::Entity> createdEntities{};
+    createdEntities.reserve(32);
+    for (std::size_t i = 0; i < 16; ++i) {
+        createdEntities.push_back(myWorld.CreateEntity(std::size_t(i), Quaternion{}));
+    }
+    for (std::size_t i = 16; i < 32; ++i) {
+        createdEntities.push_back(myWorld.CreateEntity(std::size_t(i)));
+    }
+
+
+    std::array<bool, 16> hasAllQuaternionAndVector{};
+    myWorld.ForeachEntity<std::size_t, Quaternion>(
+            [&](flf::EntityId, std::size_t val, Quaternion quaternion) {
+                hasAllQuaternionAndVector[val] = true;
+            });
+    for (const auto item : hasAllQuaternionAndVector) {
+        CHECK(item);
+    }
+
+
+    std::array<bool, 32> hasAllVector{};
+    myWorld.ForeachEntity<std::size_t>(
+            [&](flf::EntityId, std::size_t val) {
+                hasAllVector[val] = true;
+            });
+    for (const auto item : hasAllVector) {
+        CHECK(item);
+    }
+}
+
+TEST_CASE("World ForeachEntity With Empty Type")
+{
+    flf::World myWorld{};
+    std::vector<flf::Entity> createdEntities{};
+    createdEntities.reserve(32);
+    for (std::size_t i = 0; i < 16; ++i) {
+        auto iInt = int(i);
+        createdEntities.push_back(myWorld.CreateEntity(Vector3{iInt, iInt * 2, iInt * 4}, Quaternion{}, Empty{}));
+    }
+
+    myWorld.ForeachEntity<Vector3 &, Quaternion, Empty>(
+            [](flf::EntityId, Vector3 &vec, Quaternion quaternion, Empty) {
+                vec.y /= 2;
+            });
+    myWorld.ForeachEntity<Vector3>(
+            [](flf::EntityId, Vector3 vec) {
                 CHECK_EQ(vec.x, vec.y);
             });
 }

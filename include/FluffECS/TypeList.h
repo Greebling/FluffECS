@@ -7,20 +7,24 @@
 
 namespace flf::internal {
 
+    template<typename T>
+    constexpr bool IsEmpty = std::is_empty_v<T> && std::is_trivially_constructible_v<T>;
+
     template<typename T, typename ...Ts>
     struct FirstNonEmptyChecker {
-        using Type = std::conditional_t<std::is_empty_v<T>, typename FirstNonEmptyChecker<Ts...>::Type, T>;
+        using Type = std::conditional_t<IsEmpty<T>, typename FirstNonEmptyChecker<Ts...>::Type, T>;
     };
 
     template<typename T>
     struct FirstNonEmptyChecker<T> {
         // TODO: Add compilation error at !std::is_empty_v<T>
         //static_assert(!std::is_empty_v<T>, "At least one type has to be non empty");
-        using Type = std::conditional_t<std::is_empty_v<T>, void, T>;
+        using Type = std::conditional_t<IsEmpty<T>, void, T>;
     };
 
-
-    template<typename ...Ts> using FirstNonEmpty = typename FirstNonEmptyChecker<Ts...>::Type;
+    /// Alias for the first nonempty type of template arguments or, if all types are empty, void alias
+    template<typename ...Ts>
+    using FirstNonEmpty = typename FirstNonEmptyChecker<Ts...>::Type;
 
 
     template<typename T, typename ...Ts>
@@ -100,23 +104,18 @@ namespace flf::internal {
     template<typename Front, typename ...Ts, typename ...TDone>
     constexpr auto AllNonEmptyTypes(TypeList<Front, Ts...>, TypeList<TDone...> = TypeList<>()) {
         if constexpr (sizeof...(Ts) == 0) {
-            if constexpr(std::is_empty_v<Front>) {
+            if constexpr(IsEmpty<Front>) {
                 return TypeList<TDone...>();
             } else {
                 return TypeList<TDone..., Front>();
             }
         } else {
-            if constexpr(std::is_empty_v<Front>) {
+            if constexpr(IsEmpty<Front>) {
                 return AllNonEmptyTypes(TypeList<Ts...>(), TypeList<TDone...>());
             } else {
                 return AllNonEmptyTypes(TypeList<Ts...>(), TypeList<TDone..., Front>());
             }
         }
-    }
-
-    template<typename ...Ts>
-    constexpr std::tuple<Ts...> TupleFromTypeList(TypeList<Ts...>) {
-        return std::tuple<Ts...>();
     }
 
     template<typename ...Ts>

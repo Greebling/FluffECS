@@ -46,7 +46,7 @@ namespace flf {
         template<typename ...TComponents, typename TFunc>
         void Foreach(TFunc function) FLUFF_MAYBE_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>) {
             static_assert(((not std::is_pointer_v<TComponents>) && ...), "Type cannot be a pointer");
-            // static_assert(std::is_invocable_v<TFunc, TComponents...>, "Function parameters do not match with given template parameters");
+            static_assert(std::is_invocable_v<TFunc, TComponents...>, "Function parameters do not match with given template parameters");
 
             // check index of non empty type to allow more optimizations
             using IndexCheckType = std::remove_reference_t<typename internal::FirstNonEmpty<ValueType<TComponents>...>> *;
@@ -57,23 +57,10 @@ namespace flf {
                 auto current = container->template RawBegin<std::remove_reference_t<TComponents>...>();
                 const auto ends = container->template RawEnd<std::remove_reference_t<TComponents>...>();
                 while (std::get<IndexCheckType>(current) < std::get<IndexCheckType>(ends)) {
-                    Call(function, current);
-                    /*
-					function(
-					        (GetIfNonEmpty<std::remove_reference_t<TComponents>>(current))
-					        ...);*/
 
+                    function(GetFromTuple<TComponents>(current)...);
                     IncrementElements(current);
                 }
-            }
-        }
-
-        template<typename T, typename TTuple>
-        static auto GetIfNonEmpty(TTuple &tuple) {
-            if constexpr(std::is_empty_v<T>) {
-                return void(0);
-            } else {
-                return *std::get<T *>(tuple);
             }
         }
 
@@ -92,7 +79,7 @@ namespace flf {
                 const auto ends = container->template RawEndWithEntity<std::remove_reference_t<TComponents>...>();
 
                 while (std::get<EntityId *>(current) < std::get<EntityId *>(ends)) {
-                    function(*std::get<EntityId *>(current), (*std::get<std::remove_reference_t<TComponents> *>(current)) ...);
+                    function(*std::get<EntityId *>(current), GetFromTuple<TComponents>(current)...);
 
                     IncrementElements(current);
                 }
@@ -429,7 +416,7 @@ namespace flf {
     private:
         /// Increments all elements of a tuple
         /// \tparam Ts types contained in the tuple
-        /// \param tuple to incrmeent
+        /// \param tuple to increment
         template<typename ...Ts>
         static constexpr void IncrementElements(std::tuple<Ts...> &tuple) {
             ((++std::get<Ts>(tuple)), ...);
@@ -440,9 +427,43 @@ namespace flf {
         /// \param function to call
         /// \param tupleArgs pointers of arguments to pass to function
         /// \return
-        template<typename TFunc, typename ...Ts>
-        static constexpr void Call(TFunc &function, std::tuple<Ts *...> &tupleArgs) {
-            function(*std::get<Ts *>(tupleArgs)...);
+        template<typename TFunc, typename ...Ts, typename ...TFuncArgs>
+        static constexpr void Call(TFunc &function, std::tuple<Ts *...> &tupleArgs, internal::TypeList<TFuncArgs...>) {
+            function(GetFromTuple<std::remove_reference_t<TFuncArgs>>(tupleArgs)...);
+        }
+
+        /// Gets the elements of a tuple of pointers or returns a new element by value if is_empty_v<T> and is_trivially_constructible_v<T> evaluates to true
+        /// EMPTY TYPE VARIANT
+        /// \tparam T Type to get
+        /// \tparam TTuple Type of tuple (deduced)
+        /// \param tuple To get the elements from if non empty
+        /// \return A newly created empty type (usually optimized away by the compiler)
+        template<typename T, typename TTuple>
+        static constexpr std::enable_if_t<(not std::is_reference_v<T>) && internal::IsEmpty<T>, T> GetFromTuple(TTuple &tuple) {
+            return ValueType<T>();
+        }
+
+        /// Gets the elements of a tuple of pointers or returns a new element by value if is_empty_v<T> and is_trivially_constructible_v<T> evaluates to true
+        /// COMPILATION ERROR VARIANT
+        /// \tparam T Type to get
+        /// \tparam TTuple Type of tuple (deduced)
+        /// \param tuple To get the elements from if non empty
+        /// \return A compilation error
+        template<typename T, typename TTuple>
+        static constexpr std::enable_if_t<std::is_reference_v<T> && internal::IsEmpty<std::remove_reference_t<T>>, T> GetFromTuple(TTuple &tuple) {
+            static_assert(internal::IsEmpty<T>, "Has to get empty type by value");
+            return ValueType<T>();
+        }
+
+        /// Gets the elements of a tuple of pointers or returns a new element by value if is_empty_v<T> and is_trivially_constructible_v<T> evaluates to true
+        /// GET ELEMENT FROM TUPLE VARIANT
+        /// \tparam T Type to get
+        /// \tparam TTuple Type of tuple (deduced)
+        /// \param tuple To get the elements from if non empty
+        /// \return A reference to the tuples element
+        template<typename T, typename TTuple>
+        static constexpr std::enable_if_t<not internal::IsEmpty<std::remove_reference_t<T>>, T &> GetFromTuple(TTuple &tuple) {
+            return *std::get<std::remove_reference_t<T> *>(tuple);
         }
 
     private:
