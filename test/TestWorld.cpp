@@ -117,16 +117,16 @@ TEST_CASE("World Foreach Value Types")
     std::vector<flf::Entity> createdEntities{};
     createdEntities.reserve(32);
     for (std::size_t i = 0; i < 16; ++i) {
-        createdEntities.push_back(myWorld.CreateEntity(std::size_t(i), Quaternion{}));
+        createdEntities.push_back(myWorld.CreateEntity(int(i), Quaternion{}));
     }
     for (std::size_t i = 16; i < 32; ++i) {
-        createdEntities.push_back(myWorld.CreateEntity(std::size_t(i)));
+        createdEntities.push_back(myWorld.CreateEntity(int(i)));
     }
 
 
     std::array<bool, 16> hasAllQuaternionAndVector{};
-    myWorld.Foreach<std::size_t, Quaternion>(
-            [&](std::size_t val, Quaternion quaternion) {
+    myWorld.Foreach<int, Quaternion>(
+            [&](int val, Quaternion quaternion) {
                 hasAllQuaternionAndVector[val] = true;
             });
     for (const auto item : hasAllQuaternionAndVector) {
@@ -135,8 +135,8 @@ TEST_CASE("World Foreach Value Types")
 
 
     std::array<bool, 32> hasAllVector{};
-    myWorld.Foreach<std::size_t>(
-            [&](std::size_t val) {
+    myWorld.Foreach<int>(
+            [&](int val) {
                 hasAllVector[val] = true;
             });
     for (const auto item : hasAllVector) {
@@ -191,16 +191,16 @@ TEST_CASE("World ForeachEntity Value Types")
     std::vector<flf::Entity> createdEntities{};
     createdEntities.reserve(32);
     for (std::size_t i = 0; i < 16; ++i) {
-        createdEntities.push_back(myWorld.CreateEntity(std::size_t(i), Quaternion{}));
+        createdEntities.push_back(myWorld.CreateEntity(int(i), Quaternion{}));
     }
     for (std::size_t i = 16; i < 32; ++i) {
-        createdEntities.push_back(myWorld.CreateEntity(std::size_t(i)));
+        createdEntities.push_back(myWorld.CreateEntity(int(i)));
     }
 
 
     std::array<bool, 16> hasAllQuaternionAndVector{};
-    myWorld.ForeachEntity<std::size_t, Quaternion>(
-            [&](flf::EntityId, std::size_t val, Quaternion quaternion) {
+    myWorld.ForeachEntity<int, Quaternion>(
+            [&](flf::EntityId, int val, Quaternion quaternion) {
                 hasAllQuaternionAndVector[val] = true;
             });
     for (const auto item : hasAllQuaternionAndVector) {
@@ -209,8 +209,8 @@ TEST_CASE("World ForeachEntity Value Types")
 
 
     std::array<bool, 32> hasAllVector{};
-    myWorld.ForeachEntity<std::size_t>(
-            [&](flf::EntityId, std::size_t val) {
+    myWorld.ForeachEntity<int>(
+            [&](flf::EntityId, int val) {
                 hasAllVector[val] = true;
             });
     for (const auto item : hasAllVector) {

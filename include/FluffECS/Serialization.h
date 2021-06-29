@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fstream>
-#include "ComponentContainer.h"
+#include "Archetype.h"
 
 namespace flf
 {

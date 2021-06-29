@@ -15,7 +15,7 @@
 
 namespace flf
 {
-	class ComponentContainer
+	class Archetype
 	{
 	public:
 		template<typename T> using VectorOf = std::pmr::vector<T>;
@@ -26,14 +26,14 @@ namespace flf
 		static constexpr IndexType VECTOR_PRE_RESERVE_AMOUNT = 32;
 
 	public:
-		explicit ComponentContainer(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT: _ownResource(&resource)
+		explicit Archetype(std::pmr::memory_resource &resource) FLUFF_NOEXCEPT: _ownResource(&resource)
 		{
 		}
 
-		ComponentContainer() FLUFF_NOEXCEPT = default;
+		Archetype() FLUFF_NOEXCEPT = default;
 
-		ComponentContainer(const ComponentContainer &other) FLUFF_MAYBE_NOEXCEPT: _ownResource(other._ownResource), _sparse(other._sparse),
-		                                                                          _typeInfos(other._typeInfos), _componentVectors(other._ownResource)
+		Archetype(const Archetype &other) FLUFF_MAYBE_NOEXCEPT: _ownResource(other._ownResource), _sparse(other._sparse),
+                                                                _typeInfos(other._typeInfos), _componentVectors(other._ownResource)
 		{
 		}
 
@@ -309,7 +309,7 @@ namespace flf
 		template<typename TComponent>
 		[[nodiscard]] inline const internal::DynamicVector &GetVector() const FLUFF_NOEXCEPT
 		{
-			assert(ContainsType(TypeId<TComponent>()) && "Type not in ComponentContainer");
+			assert(ContainsType(TypeId<TComponent>()) && "Type not in Archetype");
 			return *GetVector(TypeId<TComponent>());
 		}
 
@@ -318,14 +318,14 @@ namespace flf
 		template<typename TComponent>
 		[[nodiscard]] inline internal::DynamicVector &GetVector() FLUFF_NOEXCEPT
 		{
-			assert(ContainsType(TypeId<TComponent>()) && "Type not in ComponentContainer");
+			assert(ContainsType(TypeId<TComponent>()) && "Type not in Archetype");
 			return *GetVector(TypeId<TComponent>());
 		}
 
-		/// Moves all data associated with the given entity to another ComponentContainer
+		/// Moves all data associated with the given entity to another Archetype
 		/// \param destination to move the data to
 		/// \param id associated with the data to be moved
-		void MoveEntityTo(ComponentContainer &destination, EntityId id) FLUFF_MAYBE_NOEXCEPT
+		void MoveEntityTo(Archetype &destination, EntityId id) FLUFF_MAYBE_NOEXCEPT
 		{
 			assert(ContainsId(id) && "Id not contained!");
 
@@ -512,7 +512,7 @@ namespace flf
 		template<typename ...Ts> using NonEmptyTypeList = decltype(internal::AllNonEmptyTypes(internal::TypeList<Ts...>()));
 
 	public:
-		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \tparam TComponents to get. Need to be contained in this Archetype!
 		/// \return a tuple of pointers to the begin of all given components
 		template<typename ...TComponents>
 		auto RawBegin() FLUFF_NOEXCEPT
@@ -548,7 +548,7 @@ namespace flf
 			return PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
 		}
 
-		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \tparam TComponents to get. Need to be contained in this Archetype!
 		/// \return a tuple of pointers to the end to of all given components
 		template<typename ...TComponents>
         auto RawEnd() FLUFF_NOEXCEPT
@@ -585,7 +585,7 @@ namespace flf
             return PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
 		}
 
-		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \tparam TComponents to get. Need to be contained in this Archetype!
 		/// \return a tuple of pointers to the begin to of all given components and to the EntityIds
 		template<typename ...TComponents>
         auto RawBeginWithEntity() FLUFF_NOEXCEPT
@@ -618,11 +618,12 @@ namespace flf
 				}
 			}
 
+			// add entity id
 			auto componentData = PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
-			return std::tuple_cat(componentData, std::make_tuple(_componentIds.data()));
+			return std::tuple_cat(std::make_tuple(_componentIds.data()), componentData);
 		}
 
-		/// \tparam TComponents to get. Need to be contained in this ComponentContainer!
+		/// \tparam TComponents to get. Need to be contained in this Archetype!
 		/// \return a tuple of pointers to the end to of all given components and to the EntityIds
 		template<typename ...TComponents>
         auto RawEndWithEntity() FLUFF_NOEXCEPT
@@ -655,9 +656,9 @@ namespace flf
 				}
 			}
 
-
+            // add entity id
             auto componentData = PointerToArrayTuple(ImportantTypes(), pointers, std::make_index_sequence<NumElements>());
-			return std::tuple_cat(componentData, std::make_tuple(_componentIds.data() + _componentIds.size()));
+			return std::tuple_cat(std::make_tuple(_componentIds.data() + _componentIds.size()), componentData);
 		}
 
 	private:
