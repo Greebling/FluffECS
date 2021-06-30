@@ -14,7 +14,7 @@ namespace flf::internal
 	/// \tparam TKey that is used for lookup, see description for notes
 	/// \tparam TValue that will be associated with a sequence of keys
 	template<typename TKey, typename TValue>
-	class SortedKeyTree
+	class KeySequenceTree
 	{
 	public:
 		static_assert(std::is_default_constructible_v<TValue>);
@@ -22,7 +22,7 @@ namespace flf::internal
 		template<typename T>
 		using VectorOf = std::pmr::vector<T>;
 		
-		explicit SortedKeyTree(std::pmr::memory_resource &resource)
+		explicit KeySequenceTree(std::pmr::memory_resource &resource)
 				: _resource(resource), _head(resource)
 		{
 		}

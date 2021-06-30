@@ -14,7 +14,11 @@
 #define FLUFF_UNLIKELY
 #endif
 
+
 #include <type_traits>
+#include <cassert>
+
+#define FLUFF_ASSERT( expr ) assert( expr )
 
 namespace flf
 {

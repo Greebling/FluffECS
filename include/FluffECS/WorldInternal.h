@@ -8,7 +8,7 @@
 
 namespace flf
 {
-	class ComponentContainer;
+	class Archetype;
 }
 
 namespace flf::internal
@@ -21,17 +21,17 @@ namespace flf::internal
 			return _entityToContainer.Contains(id);
 		}
 		
-		[[nodiscard]] ComponentContainer &ContainerOf(EntityId id) FLUFF_NOEXCEPT
+		[[nodiscard]] Archetype &ContainerOf(EntityId id) FLUFF_NOEXCEPT
 		{
 			return *_entityToContainer[id];
 		}
 		
-		[[nodiscard]] const ComponentContainer &ContainerOf(EntityId id) const FLUFF_NOEXCEPT
+		[[nodiscard]] const Archetype &ContainerOf(EntityId id) const FLUFF_NOEXCEPT
 		{
 			return *_entityToContainer[id];
 		}
 		
-		inline std::pair<EntityId, EntityId> GetNextIndicesRange(EntityId n, ComponentContainer &owner)
+		inline std::pair<EntityId, EntityId> GetNextIndicesRange(EntityId n, Archetype &owner)
 		{
 			// TODO: This causes bad alloc for large sizes, but the single one does not. why?
 			auto beginIndex = _nextFreeIndex;
@@ -54,7 +54,7 @@ namespace flf::internal
 		/// Creates a new unique id for an entity
 		/// \param owner of that new entity
 		/// \return the a free unique id for an entity in this world
-		[[nodiscard]] inline EntityId TakeNextFreeIndex(ComponentContainer &owner) FLUFF_MAYBE_NOEXCEPT
+		[[nodiscard]] inline EntityId TakeNextFreeIndex(Archetype &owner) FLUFF_MAYBE_NOEXCEPT
 		{
 			auto index = _nextFreeIndex;
 			// TODO: This is a performance bottleneck. Can we make this more efficient than taking much of the time of creating many entities?
@@ -64,7 +64,7 @@ namespace flf::internal
 			return index;
 		}
 		
-		inline void AssociateIdWith(EntityId id, ComponentContainer &container) FLUFF_NOEXCEPT
+		inline void AssociateIdWith(EntityId id, Archetype &container) FLUFF_NOEXCEPT
 		{
 			_entityToContainer.SetEntry(id, &container);
 		}
@@ -76,6 +76,6 @@ namespace flf::internal
 		/// Used for small, temporary allocations
 		std::pmr::unsynchronized_pool_resource _tempResource{{2, 1024}};
 		
-		internal::SparseSet<ComponentContainer *, EntityId> _entityToContainer{_sparseMemory};
+		internal::SparseSet<Archetype *, EntityId> _entityToContainer{_sparseMemory};
 	};
 }
