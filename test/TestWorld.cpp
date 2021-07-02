@@ -218,6 +218,40 @@ TEST_CASE("World ForeachEntity Value Types")
     }
 }
 
+TEST_CASE("World Foreach const Value Types")
+{
+	flf::World myWorld{};
+	
+	std::vector<flf::Entity> createdEntities{};
+	createdEntities.reserve(32);
+	for (std::size_t i = 0; i < 16; ++i) {
+		createdEntities.push_back(myWorld.CreateEntity(int(i), Quaternion{}));
+	}
+	for (std::size_t i = 16; i < 32; ++i) {
+		createdEntities.push_back(myWorld.CreateEntity(int(i)));
+	}
+	
+	
+	std::array<bool, 16> hasAllQuaternionAndVector{};
+	myWorld.Foreach<const int, const Quaternion>(
+			[&](const int val, const Quaternion quaternion) {
+				hasAllQuaternionAndVector[val] = true;
+			});
+	for (const auto item : hasAllQuaternionAndVector) {
+		CHECK(item);
+	}
+	
+	
+	std::array<bool, 32> hasAllVector{};
+	myWorld.Foreach<const int>(
+			[&](const int val) {
+				hasAllVector[val] = true;
+			});
+	for (const auto item : hasAllVector) {
+		CHECK(item);
+	}
+}
+
 TEST_CASE("World ForeachEntity With Empty Type")
 {
     flf::World myWorld{};
