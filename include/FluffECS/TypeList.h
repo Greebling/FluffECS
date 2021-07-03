@@ -7,9 +7,6 @@
 
 namespace flf::internal {
 
-    template<typename T>
-    constexpr bool IsEmpty = std::is_empty_v<T> && std::is_trivially_constructible_v<T>;
-
     template<typename T, typename ...Ts>
     struct FirstNonEmptyChecker {
         using Type = std::conditional_t<IsEmpty<T>, typename FirstNonEmptyChecker<Ts...>::Type, T>;

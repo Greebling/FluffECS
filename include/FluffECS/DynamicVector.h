@@ -257,16 +257,19 @@ namespace flf::internal
 		template<typename T>
 		void DestructElements() FLUFF_NOEXCEPT(std::is_nothrow_destructible_v<T>)
 		{
-			T *const end = reinterpret_cast<T *>(_sizeEnd);
-			for (T *current = reinterpret_cast<T *>(_begin); current < end; ++current)
+			if constexpr(!IsEmpty<T>)
 			{
-				std::destroy_at(current);
+				T *const end = reinterpret_cast<T *>(_sizeEnd);
+				for (T *current = reinterpret_cast<T *>(_begin); current < end; ++current)
+				{
+					std::destroy_at(current);
+				}
+				
+				_resource->deallocate(_begin, ByteCapacity());
+				
+				_sizeEnd = _begin;
+				_capacityEnd = _begin;
 			}
-			
-			_resource->deallocate(_begin, ByteCapacity());
-			
-			_sizeEnd = _begin;
-			_capacityEnd = _begin;
 		}
 		
 		/// Gets the indexth element in the vector
@@ -276,10 +279,18 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline T &Get(std::size_t index) FLUFF_NOEXCEPT
 		{
+			if constexpr(!IsEmpty<T>)
+			{
 #ifdef FLUFF_DO_RANGE_CHECKS
-			assert(index < Size<T>() && "Index out of range");
+				assert(index < Size<T>() && "Index out of range");
 #endif
-			return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
+				return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
+			} else
+			{
+				static_assert(IsEmpty<T>); // TODO: Handle this case
+				
+				return *(std::launder(reinterpret_cast<T *>(_begin)));
+			}
 		}
 		
 		/// Gets the indexth element in the vector
@@ -289,10 +300,18 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline const T &Get(std::size_t index) const FLUFF_NOEXCEPT
 		{
+			if constexpr(!IsEmpty<T>)
+			{
 #ifdef FLUFF_DO_RANGE_CHECKS
-			assert(index < Size<T>() && "Index out of range");
+				assert(index < Size<T>() && "Index out of range");
 #endif
-			return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
+				return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
+			} else
+			{
+				static_assert(IsEmpty<T>); // TODO: Handle this case
+				
+				return *(std::launder(reinterpret_cast<T *>(_begin)));
+			}
 		}
 		
 		/// Gets the first element
@@ -301,7 +320,15 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline T &Front() FLUFF_NOEXCEPT
 		{
-			return *std::launder(reinterpret_cast<T *>(_begin));
+			if constexpr(!IsEmpty<T>)
+			{
+				return *std::launder(reinterpret_cast<T *>(_begin));
+			} else
+			{
+				static_assert(IsEmpty<T>); // TODO: Handle this case
+				
+				return *(std::launder(reinterpret_cast<T *>(_begin)));
+			}
 		}
 		
 		/// Gets the last element
@@ -310,7 +337,15 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline T &Back() FLUFF_NOEXCEPT
 		{
-			return *(std::launder(reinterpret_cast<T *>(_sizeEnd)) - 1);
+			if constexpr(!IsEmpty<T>)
+			{
+				return *(std::launder(reinterpret_cast<T *>(_sizeEnd)) - 1);
+			} else
+			{
+				static_assert(IsEmpty<T>); // TODO: Handle this case
+				
+				return *(std::launder(reinterpret_cast<T *>(_sizeEnd)));
+			}
 		}
 		
 		/// Gets the first element
@@ -319,7 +354,15 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline const T &Front() const FLUFF_NOEXCEPT
 		{
-			return *std::launder(reinterpret_cast<const T *>(_begin));
+			if constexpr(!IsEmpty<T>)
+			{
+				return *std::launder(reinterpret_cast<const T *>(_begin));
+			} else
+			{
+				static_assert(IsEmpty<T>); // TODO: Handle this case
+				
+				return *(std::launder(reinterpret_cast<const T *>(_begin)));
+			}
 		}
 		
 		/// Gets the last element
@@ -328,7 +371,15 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline const T &Back() const FLUFF_NOEXCEPT
 		{
-			return *(std::launder(reinterpret_cast<const T *>(_sizeEnd)) - 1);
+			if constexpr(!IsEmpty<T>)
+			{
+				return *(std::launder(reinterpret_cast<const T *>(_sizeEnd)) - 1);
+			} else
+			{
+				static_assert(IsEmpty<T>); // TODO: Handle this case
+				
+				return *(std::launder(reinterpret_cast<const T *>(_sizeEnd)));
+			}
 		}
 		
 		[[nodiscard]] inline std::byte *BackPtr() FLUFF_NOEXCEPT
@@ -342,7 +393,13 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline std::size_t Size() const FLUFF_NOEXCEPT
 		{
-			return ByteSize() / sizeof(T);
+			if constexpr(!IsEmpty<T>)
+			{
+				return ByteSize() / sizeof(T);
+			} else
+			{
+				return 0;
+			}
 		}
 		
 		/// Calculates how many objects of given type can be contained in this vector without reallocation
@@ -351,15 +408,25 @@ namespace flf::internal
 		template<typename T>
 		[[nodiscard]] inline std::size_t Capacity() const FLUFF_NOEXCEPT
 		{
-			return ByteCapacity() / sizeof(T);
+			if constexpr(!IsEmpty<T>)
+			{
+				return ByteCapacity() / sizeof(T);
+			} else
+			{
+				return 0;
+			}
 		}
 		
 		template<typename T>
 		void Fill(std::size_t begin, std::size_t end, T data) FLUFF_NOEXCEPT
 		{
-			for (T *currPtr = reinterpret_cast<T *>(_begin) + begin, *const endPtr = reinterpret_cast<T *>(_begin) + end; currPtr < endPtr; currPtr++)
+			if constexpr(!IsEmpty<T>)
 			{
-				*currPtr = data;
+				for (T *currPtr = reinterpret_cast<T *>(_begin) + begin, *const endPtr = reinterpret_cast<T *>(_begin) + end;
+				currPtr < endPtr; currPtr++)
+				{
+					*currPtr = data;
+				}
 			}
 		}
 		
@@ -369,10 +436,13 @@ namespace flf::internal
 		template<typename T>
 		inline T &PushBack() FLUFF_MAYBE_NOEXCEPT
 		{
-			Reserve<T>(Size<T>() + 1);
-			new(reinterpret_cast<T *>(_sizeEnd)) T();
-			_sizeEnd += sizeof(T);
-			return Back<T>();
+			if constexpr(!IsEmpty<T>)
+			{
+				Reserve<T>(Size<T>() + 1);
+				new(reinterpret_cast<T *>(_sizeEnd)) T();
+				_sizeEnd += sizeof(T);
+				return Back<T>();
+			}
 		}
 		
 		/// Emplaces an element to the back of the vector
@@ -382,9 +452,13 @@ namespace flf::internal
 		template<typename T>
 		inline T &PushBack(const T &element) FLUFF_MAYBE_NOEXCEPT
 		{
-			Reserve<T>(Size<T>() + 1);
-			new(reinterpret_cast<T *>(_sizeEnd)) T(element);
-			_sizeEnd += sizeof(T);
+			if constexpr(!IsEmpty<T>)
+			{
+				Reserve<T>(Size<T>() + 1);
+				new(reinterpret_cast<T *>(_sizeEnd)) T(element);
+				_sizeEnd += sizeof(T);
+			}
+			
 			return Back<T>();
 		}
 		
@@ -395,9 +469,13 @@ namespace flf::internal
 		template<typename T>
 		inline T &EmplaceBack(T &&element) FLUFF_MAYBE_NOEXCEPT
 		{
-			Reserve<T>(Size<T>() + 1);
-			new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<T>(element));
-			_sizeEnd += sizeof(T);
+			if constexpr(!IsEmpty<T>)
+			{
+				Reserve<T>(Size<T>() + 1);
+				new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<T>(element));
+				_sizeEnd += sizeof(T);
+			}
+			
 			return Back<T>();
 		}
 		
@@ -408,11 +486,14 @@ namespace flf::internal
 		template<typename T, typename ...TArgs>
 		inline T &EmplaceBack(TArgs &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
-			static_assert(std::is_constructible_v<T, TArgs...>, "Invalid constructor arguments given");
-			
-			Reserve<T>(Size<T>() + 1);
-			new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<TArgs>(args)...);
-			_sizeEnd += sizeof(T);
+			if constexpr(!IsEmpty<T>)
+			{
+				static_assert(std::is_constructible_v<T, TArgs...>, "Invalid constructor arguments given");
+				
+				Reserve<T>(Size<T>() + 1);
+				new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<TArgs>(args)...);
+				_sizeEnd += sizeof(T);
+			}
 			
 			return Back<T>();
 		}
@@ -422,13 +503,16 @@ namespace flf::internal
 		template<typename T>
 		inline void PopBack() FLUFF_NOEXCEPT(std::is_nothrow_destructible_v<T>)
 		{
-			if (Size<T>() == 0) FLUFF_UNLIKELY
+			if constexpr(!IsEmpty<T>)
 			{
-				return;
+				if (Size<T>() == 0) FLUFF_UNLIKELY
+				{
+					return;
+				}
+				
+				_sizeEnd -= sizeof(T);
+				std::destroy_at(reinterpret_cast<T *>(_sizeEnd));
 			}
-			
-			_sizeEnd -= sizeof(T);
-			std::destroy_at(reinterpret_cast<T *>(_sizeEnd));
 		}
 		
 		/// Preallocates a given number of elements
@@ -437,58 +521,61 @@ namespace flf::internal
 		template<typename T>
 		void Reserve(std::size_t number) FLUFF_MAYBE_NOEXCEPT
 		{
-			if (number <= Capacity<T>())
+			if constexpr(!IsEmpty<T>)
 			{
-				// already can contain this many elements
-				return;
-			}
-			
-			const auto byteSize = ByteSize();
-			const auto previousByteCapacity = ByteCapacity();
-			auto nextCapacity = NextSize(number) * sizeof(T);
-			if (nextCapacity < MIN_OBJECT_COUNT * sizeof(T))
-			{
-				nextCapacity = MIN_OBJECT_COUNT * sizeof(T);
-			}
-			
-			auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextCapacity));
-			
-			
-			// construct the individual elements
-			if constexpr (std::is_trivially_move_constructible_v<T>)
-			{
-				// optimization: we can just copy the whole memory block over
-				std::memcpy(next, _begin, byteSize);
-			} else
-			{
-				for (T *target = reinterpret_cast<T *>(next), *const targetEnd = target + (byteSize / sizeof(T)), *source = std::launder(
-						reinterpret_cast<T *>(_begin)); target < targetEnd; ++target, ++source)
+				if (number <= Capacity<T>())
 				{
-					if constexpr (std::is_move_constructible_v<T>)
+					// already can contain this many elements
+					return;
+				}
+				
+				const auto byteSize = ByteSize();
+				const auto previousByteCapacity = ByteCapacity();
+				auto nextCapacity = NextSize(number) * sizeof(T);
+				if (nextCapacity < MIN_OBJECT_COUNT * sizeof(T))
+				{
+					nextCapacity = MIN_OBJECT_COUNT * sizeof(T);
+				}
+				
+				auto *next = reinterpret_cast<std::byte *>(_resource->allocate(nextCapacity));
+				
+				
+				// construct the individual elements
+				if constexpr (std::is_trivially_move_constructible_v<T>)
+				{
+					// optimization: we can just copy the whole memory block over
+					std::memcpy(next, _begin, byteSize);
+				} else
+				{
+					for (T *target = reinterpret_cast<T *>(next), *const targetEnd = target + (byteSize / sizeof(T)), *source = std::launder(
+							reinterpret_cast<T *>(_begin)); target < targetEnd; ++target, ++source)
 					{
-						// move construct
-						new(target) T(std::forward<T>(*source));
-					} else
-					{
-						// copy construct
-						new(target) T(*source);
+						if constexpr (std::is_move_constructible_v<T>)
+						{
+							// move construct
+							new(target) T(std::forward<T>(*source));
+						} else
+						{
+							// copy construct
+							new(target) T(*source);
+						}
 					}
 				}
-			}
-			
-			if constexpr(not std::is_trivially_destructible_v<T>)
-			{
-				for (T *source = std::launder(reinterpret_cast<T *>(_begin)), *const sourceEnd = reinterpret_cast<T *>(_sizeEnd); source < sourceEnd; ++source)
+				
+				if constexpr(not std::is_trivially_destructible_v<T>)
 				{
-					std::destroy_at(source);
+					for (T *source = std::launder(reinterpret_cast<T *>(_begin)), *const sourceEnd = reinterpret_cast<T *>(_sizeEnd); source < sourceEnd; ++source)
+					{
+						std::destroy_at(source);
+					}
 				}
+				
+				_resource->deallocate(_begin, previousByteCapacity);
+				
+				_begin = next;
+				_sizeEnd = _begin + byteSize;
+				_capacityEnd = _begin + nextCapacity;
 			}
-			
-			_resource->deallocate(_begin, previousByteCapacity);
-			
-			_begin = next;
-			_sizeEnd = _begin + byteSize;
-			_capacityEnd = _begin + nextCapacity;
 		}
 		
 		/// Sets Size<T> = size and does a reallocation if necessary
@@ -497,36 +584,39 @@ namespace flf::internal
 		template<typename T>
 		void Resize(std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
-			const auto previousSize = Size<T>();
-			if (previousSize == size) FLUFF_UNLIKELY
+			if constexpr(!IsEmpty<T>)
 			{
-				// noop
-				return;
-			} else if (previousSize < size)
-			{
-				// add elements at newEnd
-				Reserve<T>(size);
-				
-				// init objects
-				for (T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize, *end = std::launder(reinterpret_cast<T *>(_begin)) + size;
-				     curr < end; ++curr)
+				const auto previousSize = Size<T>();
+				if (previousSize == size) FLUFF_UNLIKELY
 				{
+					// noop
+					return;
+				} else if (previousSize < size)
+				{
+					// add elements at newEnd
+					Reserve<T>(size);
+					
+					// init objects
+					for (T *curr = std::launder(reinterpret_cast<T *>(_begin)) + previousSize, *end = std::launder(reinterpret_cast<T *>(_begin)) + size;
+					     curr < end; ++curr)
+					{
 #if __cplusplus > 201703L
-					std::construct_at(curr);
+						std::construct_at(curr);
 #else
-					new(curr) T();
+						new(curr) T();
 #endif
-				}
-				_sizeEnd = _begin + size * sizeof(T);
-			} else // previousSize > size
-			{
-				auto nRemovedElements = size - previousSize;
-				// remove last elements
-				for (T *current = reinterpret_cast<T *>(_sizeEnd) - nRemovedElements; current < reinterpret_cast<T *>(_sizeEnd); ++current)
+					}
+					_sizeEnd = _begin + size * sizeof(T);
+				} else // previousSize > size
 				{
-					std::destroy_at(current);
+					auto nRemovedElements = size - previousSize;
+					// remove last elements
+					for (T *current = reinterpret_cast<T *>(_sizeEnd) - nRemovedElements; current < reinterpret_cast<T *>(_sizeEnd); ++current)
+					{
+						std::destroy_at(current);
+					}
+					_sizeEnd = _begin + size * sizeof(T);
 				}
-				_sizeEnd = _begin + size * sizeof(T);
 			}
 		}
 		
@@ -538,22 +628,23 @@ namespace flf::internal
 		template<typename T>
 		void ResizeUnsafe(std::size_t size) FLUFF_MAYBE_NOEXCEPT
 		{
-			auto previousSize = Size<T>();
-			if (previousSize == size) FLUFF_UNLIKELY
+			if constexpr(!IsEmpty<T>)
 			{
-				// noop
-				return;
-			} else if (previousSize < size)
-			{
-				// add elements at end
-				Reserve<T>(size);
-				_sizeEnd = _begin + size * sizeof(T);
-			} else // previousSize > size
-			{
-				_sizeEnd = _begin + size * sizeof(T);
+				auto previousSize = Size<T>();
+				if (previousSize == size) FLUFF_UNLIKELY
+				{
+					// noop
+					return;
+				} else if (previousSize < size)
+				{
+					// add elements at end
+					Reserve<T>(size);
+					_sizeEnd = _begin + size * sizeof(T);
+				} else // previousSize > size
+				{
+					_sizeEnd = _begin + size * sizeof(T);
+				}
 			}
 		}
 	};
-	
-	static_assert(sizeof(DynamicVector) == sizeof(ByteVector));
 }

@@ -132,7 +132,7 @@ namespace flf
 		static constexpr TypeInformation Of() FLUFF_NOEXCEPT
 		{
 			return TypeInformation(TypeId<T>(),
-			                       sizeof(T)
+			                       internal::IsEmpty<T> ? 0 : sizeof(T)
 #ifdef FLUFF_TYPE_INFO_NAME
 					,internal::GetTypeName<T>()
 #endif

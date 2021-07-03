@@ -24,4 +24,10 @@ namespace flf
 {
 	template<typename T>
 	using ValueType = std::remove_const_t<std::remove_pointer_t<std::remove_reference_t<T>>>;
+	
+	namespace internal
+	{
+		template<typename T>
+		constexpr bool IsEmpty = std::is_empty_v<T> && std::is_trivially_constructible_v<T>;
+	}
 }
