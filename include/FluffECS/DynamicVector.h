@@ -287,7 +287,7 @@ namespace flf::internal
 				return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
 			} else
 			{
-				static_assert(IsEmpty<T>); // TODO: Handle this case
+				static_assert(!IsEmpty<T>); // TODO: Handle this case
 				
 				return *(std::launder(reinterpret_cast<T *>(_begin)));
 			}
@@ -308,7 +308,7 @@ namespace flf::internal
 				return *(std::launder(reinterpret_cast<T *>(_begin)) + index);
 			} else
 			{
-				static_assert(IsEmpty<T>); // TODO: Handle this case
+				static_assert(!IsEmpty<T>); // TODO: Handle this case
 				
 				return *(std::launder(reinterpret_cast<T *>(_begin)));
 			}
@@ -325,7 +325,7 @@ namespace flf::internal
 				return *std::launder(reinterpret_cast<T *>(_begin));
 			} else
 			{
-				static_assert(IsEmpty<T>); // TODO: Handle this case
+				static_assert(!IsEmpty<T>); // TODO: Handle this case
 				
 				return *(std::launder(reinterpret_cast<T *>(_begin)));
 			}
@@ -342,7 +342,7 @@ namespace flf::internal
 				return *(std::launder(reinterpret_cast<T *>(_sizeEnd)) - 1);
 			} else
 			{
-				static_assert(IsEmpty<T>); // TODO: Handle this case
+				static_assert(!IsEmpty<T>); // TODO: Handle this case
 				
 				return *(std::launder(reinterpret_cast<T *>(_sizeEnd)));
 			}
@@ -359,7 +359,7 @@ namespace flf::internal
 				return *std::launder(reinterpret_cast<const T *>(_begin));
 			} else
 			{
-				static_assert(IsEmpty<T>); // TODO: Handle this case
+				static_assert(!IsEmpty<T>); // TODO: Handle this case
 				
 				return *(std::launder(reinterpret_cast<const T *>(_begin)));
 			}
@@ -376,7 +376,7 @@ namespace flf::internal
 				return *(std::launder(reinterpret_cast<const T *>(_sizeEnd)) - 1);
 			} else
 			{
-				static_assert(IsEmpty<T>); // TODO: Handle this case
+				static_assert(!IsEmpty<T>); // TODO: Handle this case
 				
 				return *(std::launder(reinterpret_cast<const T *>(_sizeEnd)));
 			}
@@ -434,14 +434,13 @@ namespace flf::internal
 		/// \tparam T Type of element to add
 		/// \return A reference to the added element
 		template<typename T>
-		inline T &PushBack() FLUFF_MAYBE_NOEXCEPT
+		inline void PushBack() FLUFF_MAYBE_NOEXCEPT
 		{
 			if constexpr(!IsEmpty<T>)
 			{
 				Reserve<T>(Size<T>() + 1);
 				new(reinterpret_cast<T *>(_sizeEnd)) T();
 				_sizeEnd += sizeof(T);
-				return Back<T>();
 			}
 		}
 		
@@ -450,7 +449,7 @@ namespace flf::internal
 		/// \param element to emplace
 		/// \return A reference to the added element
 		template<typename T>
-		inline T &PushBack(const T &element) FLUFF_MAYBE_NOEXCEPT
+		inline void PushBack(const T &element) FLUFF_MAYBE_NOEXCEPT
 		{
 			if constexpr(!IsEmpty<T>)
 			{
@@ -458,8 +457,6 @@ namespace flf::internal
 				new(reinterpret_cast<T *>(_sizeEnd)) T(element);
 				_sizeEnd += sizeof(T);
 			}
-			
-			return Back<T>();
 		}
 		
 		/// Emplaces an element to the back of the vector
@@ -467,7 +464,7 @@ namespace flf::internal
 		/// \param element to emplace
 		/// \return A reference to the added element
 		template<typename T>
-		inline T &EmplaceBack(T &&element) FLUFF_MAYBE_NOEXCEPT
+		inline void EmplaceBack(T &&element) FLUFF_MAYBE_NOEXCEPT
 		{
 			if constexpr(!IsEmpty<T>)
 			{
@@ -475,8 +472,6 @@ namespace flf::internal
 				new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<T>(element));
 				_sizeEnd += sizeof(T);
 			}
-			
-			return Back<T>();
 		}
 		
 		/// Constructs an element at the back of the vector
@@ -484,7 +479,7 @@ namespace flf::internal
 		/// \param args Constructor arguments to use
 		/// \return A reference the the newly created element
 		template<typename T, typename ...TArgs>
-		inline T &EmplaceBack(TArgs &&...args) FLUFF_MAYBE_NOEXCEPT
+		inline void EmplaceBack(TArgs &&...args) FLUFF_MAYBE_NOEXCEPT
 		{
 			if constexpr(!IsEmpty<T>)
 			{
@@ -494,8 +489,6 @@ namespace flf::internal
 				new(reinterpret_cast<T *>(_sizeEnd)) T(std::forward<TArgs>(args)...);
 				_sizeEnd += sizeof(T);
 			}
-			
-			return Back<T>();
 		}
 		
 		/// Removes the last element
