@@ -272,6 +272,7 @@ TEST_CASE("World ForeachEntity With Empty Type")
             });
 }
 
+#ifndef FLUFF_DISABLE_EMPTY_TYPE_OPTIMIZATION
 TEST_CASE("Get all non-empty types")
 {
     std::size_t size0 = decltype(
@@ -284,3 +285,4 @@ TEST_CASE("Get all non-empty types")
 
     static_assert(std::is_same_v<flf::internal::FirstNonEmpty<Vector3>, Vector3>);
 }
+#endif

@@ -27,7 +27,12 @@ namespace flf
 	
 	namespace internal
 	{
+#ifdef FLUFF_DISABLE_EMPTY_TYPE_OPTIMIZATION
+		template<typename T>
+		constexpr bool IsEmpty = false;
+#else
 		template<typename T>
 		constexpr bool IsEmpty = std::is_empty_v<T> && std::is_trivially_constructible_v<T>;
+#endif
 	}
 }
