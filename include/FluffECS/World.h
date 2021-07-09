@@ -60,7 +60,7 @@ namespace flf
             for (Archetype *container : containers) {
                 auto current = container->template RawBegin<std::remove_reference_t<TComponents>...>();
                 const auto ends = container->template RawEnd<std::remove_reference_t<TComponents>...>();
-                while (std::get<IndexCheckType>(current) < std::get<IndexCheckType>(ends)) {
+                while (std::get<IndexCheckType>(current) != std::get<IndexCheckType>(ends)) {
                     function(GetFromTuple<TComponents>(current)...);
                     IncrementElements(current);
                 }
@@ -82,7 +82,7 @@ namespace flf
                 auto current = container->template RawBeginWithEntity<std::remove_reference_t<TComponents>...>();
                 const auto ends = container->template RawEndWithEntity<std::remove_reference_t<TComponents>...>();
 
-                while (std::get<EntityId *>(current) < std::get<EntityId *>(ends)) {
+                while (std::get<EntityId *>(current) != std::get<EntityId *>(ends)) {
                     function(*std::get<EntityId *>(current), GetFromTuple<TComponents>(current)...);
                     IncrementElements(current);
                 }
