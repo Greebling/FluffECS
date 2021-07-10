@@ -25,19 +25,20 @@ namespace flf
 	namespace internal
 	{
 		template<typename T>
-		constexpr auto GetFuncName()
+		constexpr std::string_view GetFuncName()
 		{
 #if defined __clang__ || defined __GNUC__
-			return __PRETTY_FUNCTION__;
+			return std::string_view(__PRETTY_FUNCTION__);
 #elif _MSC_VER && !__INTEL_COMPILER
-			return __FUNCSIG__;
+			return std::string_view__FUNCSIG__);
 #else // not compatible with other compilers
-			return "";
+			static_assert(false, "Incompatible compiler");
+			return std::string_view("");
 #endif
 		}
 		
 		template<typename T>
-		constexpr auto GetTypeName()
+		constexpr std::string_view GetTypeName()
 		{
 			constexpr std::string_view str = GetFuncName<T>();
 #if defined __clang__ || defined __GNUC__
