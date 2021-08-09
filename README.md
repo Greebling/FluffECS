@@ -40,3 +40,15 @@ To use FluffECS in your project add the following lines to your CMakeLists.txt:
 add_subdirectory(PATH_TO_FLUFF_ECS_TOP_FOLDER)
 target_link_libraries(YOUR_TARGET PUBLIC FluffECS)
 ```
+Optionally you can get FluffECS via the FetchContent module of cmake:
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+        FluffECS
+        GIT_REPOSITORY "https://github.com/Greebling/FluffECS"
+        GIT_TAG "main" )
+FetchContent_MakeAvailable(FluffECS)
+
+target_link_libraries(YOUR_TARGET PUBLIC FluffECS)
+```
