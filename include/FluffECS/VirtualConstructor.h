@@ -3,7 +3,7 @@
 namespace flf::internal
 {
 	template<typename T>
-	static void DefaultConstructAt(void *at)
+	constexpr static void DefaultConstructAt(void *at)
 	{
 		if constexpr(std::is_default_constructible_v<T>)
 		{
@@ -15,7 +15,7 @@ namespace flf::internal
 	}
 	
 	template<typename T>
-	static void MoveConstructAt(void *at, void *from)
+	constexpr static void MoveConstructAt(void *at, void *from)
 	{
 		if constexpr(std::is_move_constructible_v<T>)
 		{
@@ -27,7 +27,7 @@ namespace flf::internal
 	}
 	
 	template<typename T>
-	static void CopyConstructAt(void *at, void *from)
+	constexpr static void CopyConstructAt(void *at, void *from)
 	{
 		if constexpr(std::is_copy_constructible_v<T>)
 		{
@@ -39,7 +39,7 @@ namespace flf::internal
 	}
 	
 	template<typename T>
-	static void DestructAt(void *at)
+	constexpr static void DestructAt(void *at)
 	{
 		if constexpr(std::is_destructible_v<T>)
 		{
