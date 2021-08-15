@@ -183,6 +183,8 @@ namespace flf::internal
 	{
 		using Result = TResult;
 		using Arguments = TypeList<TArgs...>;
+		
+		static constexpr bool isConst = false;
 	};
 	
 	template<typename TResult, typename TClass, typename ...TArgs>
@@ -190,6 +192,8 @@ namespace flf::internal
 	{
 		using Result = TResult;
 		using Arguments = TypeList<TArgs...>;
+		
+		static constexpr bool isConst = true;
 	};
 	
 	/// Generates a TypeList<FunctionArgTypes...> from any given callable
