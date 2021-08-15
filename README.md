@@ -32,7 +32,7 @@ void Update()
     );
 }
 ```
-Another example of how this library might be used can be found under examples/example.cpp
+More examples of how one may use FluffECS can be found under examples/example.cpp
 
 # Building
 To use FluffECS in your project add the following lines to your CMakeLists.txt:
