@@ -183,7 +183,6 @@ namespace flf::internal
 	{
 		using Result = TResult;
 		using Arguments = TypeList<TArgs...>;
-		using Class = TClass;
 	};
 	
 	template<typename TResult, typename TClass, typename ...TArgs>
@@ -191,14 +190,7 @@ namespace flf::internal
 	{
 		using Result = TResult;
 		using Arguments = TypeList<TArgs...>;
-		using Class = TClass;
 	};
-	
-	template<typename T>
-	constexpr typename FunctionTraits<T>::Arguments FunctionArgumentListHelper(T)
-	{
-		return {};
-	}
 	
 	/// Generates a TypeList<FunctionArgTypes...> from any given callable
 	/// \tparam T type of the callable
@@ -206,7 +198,8 @@ namespace flf::internal
 	template<typename T>
 	constexpr auto CallableArgList(T&)
 	{
-		return FunctionArgumentListHelper(&T::operator());
+		using ArgumentTypes =  typename FunctionTraits<decltype(&T::operator())>::Arguments;
+		return ArgumentTypes{};
 	}
 }
 
