@@ -284,13 +284,3 @@ TEST_CASE("Get all non-empty types")
 
     static_assert(std::is_same_v<flf::internal::FirstNonEmpty<Vector3>, Vector3>);
 }
-
-TEST_CASE("Print types")
-{
-	flf::internal::PrintTypes(flf::internal::TypeList<Vector3, Quaternion>());
-	auto lmb = [](const int &, float)
-			{
-		return true;
-			};
-	PrintTypes(flf::internal::CallableArgList(lmb));
-}
