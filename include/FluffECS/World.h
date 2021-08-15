@@ -52,7 +52,7 @@ namespace flf
             static_assert(((not std::is_pointer_v<TComponents>) && ...), "Type cannot be a pointer");
             static_assert(std::is_invocable_v<TFunc, TComponents...>, "Function parameters do not match with given template parameters");
 
-            // check index of non empty type to allow more optimizations
+            // check index of non-empty type to allow more optimizations
             using IndexCheckType = std::remove_reference_t<typename internal::FirstNonEmpty<TComponents...>> *;
 
             std::vector<Archetype *> containers = CollectVectorsOf<ValueType<TComponents>...>();
