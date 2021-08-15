@@ -8,12 +8,6 @@
 
 #include "Keywords.h"
 
-#if _MSC_VER && !__INTEL_COMPILER // yeah msvc getting the special treatment... (https://en.cppreference.com/w/cpp/language/operator_alternative)
-
-#include <ciso646>
-
-#endif
-
 /// Activates additional name member for flf::TypeInformation, especially helpful for debugging
 //#define FLUFF_TYPE_INFO_NAME
 
@@ -46,31 +40,14 @@ namespace flf
 				return str;
 			} else
 			{
-				if constexpr(str[0] != 'c')
-				{
-					// if missing 'constexpr' identifier
-					return std::string_view(str.substr(39, str.length() - 40));
-				} else
-				{
-					return std::string_view(str.substr(54, str.length() - 55));
-				}
+				constexpr auto lPos = str.find('=') + 2;
+				constexpr auto rPos = str.rfind(']');
+				return str.substr(lPos, (rPos - lPos));
 			}
 #elif _MSC_VER && !__INTEL_COMPILER
-			
-			if constexpr(str.size() < 53)
-			{
-				return std::string_view();
-			} else
-			{
-				// MSVC gives extra info, whether type is a class or struct, giving as an additional unnecessary space at the beginning if it is a struct
-				if constexpr (str[46] == ' ')
-				{
-					return std::string_view(str.substr(47, str.length() - 54));
-				} else
-				{
-					return std::string_view(str.substr(46, str.length() - 53));
-				}
-			}
+			constexpr auto lPos = str.find('<') + 1;
+			constexpr auto rPos = str.rfind('>');
+			return str.substr(lPos, (rPos - lPos));
 #else
 			static_assert(false, "Compiler does not support conversion from type to string.");
 			return std::string_view();

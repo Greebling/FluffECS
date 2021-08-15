@@ -18,6 +18,13 @@
 #include <type_traits>
 #include <cassert>
 
+
+#if _MSC_VER && !__INTEL_COMPILER // yeah msvc getting the special treatment... (https://en.cppreference.com/w/cpp/language/operator_alternative)
+
+#include <ciso646>
+
+#endif
+
 #define FLUFF_ASSERT( expr ) assert( expr )
 
 namespace flf
