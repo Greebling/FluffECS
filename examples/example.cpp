@@ -21,8 +21,9 @@ int main()
 	
 	// iterate over all entities with specific components
 	float deltaTime = 1.f / 60.f;
-	myWorld.Foreach<PositionData &, VelocityData>(
-			// both reference and value semantics are supported, giving the compiler additional possibilities to optimize
+	myWorld.Foreach(
+			// the needed component types are automatically deduced from the function signature
+			// both reference and value semantics are supported, giving the compiler additional optimization possibilities
 			[deltaTime](PositionData &position, VelocityData velocity)
 			{
 				position.x += velocity.dx * deltaTime;
@@ -32,7 +33,7 @@ int main()
 	);
 	
 	// can also get the entities ID for additional information
-	myWorld.ForeachEntity<PositionData&>(
+	myWorld.ForeachEntity(
 			// using auto types for parameters is of course also possible
 			[](flf::EntityId id, auto position)
 			{

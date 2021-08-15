@@ -22,7 +22,7 @@ void Update()
     myWorld.CreateMultiple(16, PositionData{4.f, 2.f, 0.f}, VelocityData{1.f, 0.f, 0.f});
     
     float deltaTime = 1.f / 60.f;
-    myWorld.Foreach<PositionData &, VelocityData>(
+    myWorld.Foreach(
         [deltaTime](PositionData &position, VelocityData velocity)
         {
             position.x += velocity.dx * deltaTime;
