@@ -70,7 +70,7 @@ TEST_CASE("World CreateMultiple")
         std::size_t countReferenceConstruct = 0;
         std::size_t countForwardConstruct = 0;
 
-        myWorld.Foreach<Vector3>([&](Vector3 vec) {
+        myWorld.Foreach([&](Vector3 vec) {
             if (vec == Vector3()) {
                 countDefaultConstruct++;
             } else if (vec == baseVec) {
@@ -93,7 +93,7 @@ TEST_CASE("World CreateMultiple")
         std::size_t countReferenceConstruct = 0;
         std::size_t countForwardConstruct = 0;
 
-        myWorld.Foreach<Vector3>([&](Vector3 vec) {
+        myWorld.Foreach([&](Vector3 vec) {
             if (vec == Vector3()) {
                 countDefaultConstruct++;
             } else if (vec == baseVec) {
@@ -125,7 +125,7 @@ TEST_CASE("World Foreach Value Types")
 
 
     std::array<bool, 16> hasAllQuaternionAndVector{};
-    myWorld.Foreach<int, Quaternion>(
+    myWorld.Foreach(
             [&](int val, Quaternion quaternion) {
                 hasAllQuaternionAndVector[val] = true;
             });
@@ -135,7 +135,7 @@ TEST_CASE("World Foreach Value Types")
 
 
     std::array<bool, 32> hasAllVector{};
-    myWorld.Foreach<int>(
+    myWorld.Foreach(
             [&](int val) {
                 hasAllVector[val] = true;
             });
@@ -154,11 +154,11 @@ TEST_CASE("World Foreach Reference")
         createdEntities.push_back(myWorld.CreateEntity(Vector3{iInt, iInt * 2, iInt * 4}, Quaternion{}));
     }
 
-    myWorld.Foreach<Vector3 &>(
+    myWorld.Foreach(
             [](Vector3 &vec) {
                 vec.y /= 2;
             });
-    myWorld.Foreach<Vector3>(
+    myWorld.Foreach(
             [](Vector3 vec) {
                 CHECK_EQ(vec.x, vec.y);
             });
@@ -174,11 +174,11 @@ TEST_CASE("World Foreach With Empty Type")
         createdEntities.push_back(myWorld.CreateEntity(Vector3{iInt, iInt * 2, iInt * 4}, Quaternion{}, Empty{}));
     }
 
-    myWorld.Foreach<Vector3 &, Quaternion, Empty>(
+    myWorld.Foreach(
             [](Vector3 &vec, Quaternion quaternion, Empty) {
                 vec.y /= 2;
             });
-    myWorld.Foreach<Vector3>(
+    myWorld.Foreach(
             [](Vector3 vec) {
                 CHECK_EQ(vec.x, vec.y);
             });
@@ -199,7 +199,7 @@ TEST_CASE("World ForeachEntity Value Types")
 
 
     std::array<bool, 16> hasAllQuaternionAndVector{};
-    myWorld.ForeachEntity<int, Quaternion>(
+    myWorld.ForeachEntity(
             [&](flf::EntityId, int val, Quaternion quaternion) {
                 hasAllQuaternionAndVector[val] = true;
             });
@@ -209,7 +209,7 @@ TEST_CASE("World ForeachEntity Value Types")
 
 
     std::array<bool, 32> hasAllVector{};
-    myWorld.ForeachEntity<int>(
+    myWorld.ForeachEntity(
             [&](flf::EntityId, int val) {
                 hasAllVector[val] = true;
             });
@@ -233,7 +233,7 @@ TEST_CASE("World Foreach const Value Types")
 	
 	
 	std::array<bool, 16> hasAllQuaternionAndVector{};
-	myWorld.Foreach<const int, const Quaternion>(
+	myWorld.Foreach(
 			[&](const int val, const Quaternion quaternion) {
 				hasAllQuaternionAndVector[val] = true;
 			});
@@ -243,7 +243,7 @@ TEST_CASE("World Foreach const Value Types")
 	
 	
 	std::array<bool, 32> hasAllVector{};
-	myWorld.Foreach<const int>(
+	myWorld.Foreach(
 			[&](const int val) {
 				hasAllVector[val] = true;
 			});
@@ -262,11 +262,11 @@ TEST_CASE("World ForeachEntity With Empty Type")
         createdEntities.push_back(myWorld.CreateEntity(Vector3{iInt, iInt * 2, iInt * 4}, Quaternion{}, Empty{}));
     }
 
-    myWorld.ForeachEntity<Vector3 &, Quaternion, Empty>(
+    myWorld.ForeachEntity(
             [](flf::EntityId, Vector3 &vec, Quaternion quaternion, Empty) {
                 vec.y /= 2;
             });
-    myWorld.ForeachEntity<Vector3>(
+    myWorld.ForeachEntity(
             [](flf::EntityId, Vector3 vec) {
                 CHECK_EQ(vec.x, vec.y);
             });
@@ -283,4 +283,14 @@ TEST_CASE("Get all non-empty types")
     CHECK(size1 == 1);
 
     static_assert(std::is_same_v<flf::internal::FirstNonEmpty<Vector3>, Vector3>);
+}
+
+TEST_CASE("Print types")
+{
+	flf::internal::PrintTypes(flf::internal::TypeList<Vector3, Quaternion>());
+	auto lmb = [](const int &, float)
+			{
+		return true;
+			};
+	PrintTypes(flf::internal::CallableArgList(lmb));
 }
