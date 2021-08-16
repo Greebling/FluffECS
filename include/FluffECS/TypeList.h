@@ -196,11 +196,12 @@ namespace flf::internal
 		static constexpr bool isConst = true;
 	};
 	
-	/// Generates a TypeList<FunctionArgTypes...> from any given callable
+	/// Generates a TypeList<FunctionArgTypes...> from any given callable.
+	/// NOTE: For value types this removes any const qualification, meaning 'const int' becomes 'int'
 	/// \tparam T type of the callable
 	/// \return TypeList<Ts...> of all arguments
 	template<typename T>
-	constexpr auto CallableArgList(T&)
+	constexpr auto CallableArgList(const T&)
 	{
 		using ArgumentTypes =  typename FunctionTraits<decltype(&T::operator())>::Arguments;
 		return ArgumentTypes{};
