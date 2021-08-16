@@ -54,7 +54,7 @@ namespace flf
 		/// Iterates over all components of the given types.
 		/// \param function to apply on them
 		template<typename TFunc>
-		void Foreach(TFunc function) FLUFF_MAYBE_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
+		void Foreach(TFunc &&function) FLUFF_MAYBE_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
 			ForeachImpl(function, internal::CallableArgList(function));
 		}
@@ -62,7 +62,7 @@ namespace flf
 		/// Iterates over all components of the given types.
 		/// \param function to apply on them
 		template<typename TFunc>
-		void ForeachEntity(TFunc function) FLUFF_MAYBE_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
+		void ForeachEntity(TFunc &&function) FLUFF_MAYBE_NOEXCEPT(std::is_nothrow_invocable_v<TFunc>)
 		{
 			ForeachEntityImpl(function, internal::RemoveFirst(internal::CallableArgList(function)));
 		}
